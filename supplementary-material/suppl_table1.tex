@@ -1,0 +1,136 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={7in, 10in}]{geometry}
+\usepackage{rotating}
+\usepackage{colortbl}
+
+\usepackage[style=nature]{biblatex}
+\addbibresource{pile.bib}
+
+\usepackage{caption}
+\captionsetup[table]{name=Supplementary Table, justification=raggedright, singlelinecheck=false}  
+
+\begin{document}
+
+% Please add the following required packages to your document preamble:
+% \usepackage{graphicx}
+\begin{table}[t]
+\begin{tabular}{p{2.3cm}p{4cm}p{1.2cm}p{0.7cm}p{0.7cm}p{0.7cm}p{0.7cm}p{0.7cm}p{0.7cm}p{1.6cm}}
+  \\\hline
+  \rotatebox[origin=l]{45}{Tool name} &
+  \rotatebox[origin=l]{45}{Website} &
+  \rotatebox[origin=l]{45}{Language} &
+  \rotatebox[origin=l]{45}{Receptor type} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Recommended\\for scSeq\end{tabular}} &
+  \rotatebox[origin=l]{45}{Paired chains} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Post-processing\\of clonotypes\end{tabular}} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Repertoire\\visualization\end{tabular}} &
+  \rotatebox[origin=l]{45}{Cell simliarity} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Integrated\\with Gex\end{tabular}} \\\hline
+Immcantation framework (pRESTO) \cite{Vander_Heiden2014-ou} &
+  \begin{tabular}[t]{@{}l@{}}https://immcantation.\\readthedocs.io\end{tabular} &
+  Python (and R) &
+  TCR and BCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No \\
+ImmuneArch (previously tcR) \cite{Nazarov2015-kk} &
+  https://immunarch.com/ &
+  R &
+  TCR and BCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No \\
+iMonitor \cite{Zhang2015-au} &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\zhangwei2015/IMonitor\end{tabular} &
+  Perl (and R) &
+  TCR and BCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No \\
+MIXCR \cite{Bolotin2015-oa} &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\milaboratory/mixcr\end{tabular} &
+  Java &
+  TCR and BCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No \\
+VDJtools \cite{Shugay2015-rb} &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\mikessh/vdjtools\end{tabular} &
+  Java (and Python) &
+  TCR and BCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No \\
+scTCR Seq \cite{Redmond2016-hf} &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\ElementoLab/scTCRseq\end{tabular} &
+  Python &
+  TCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No \\
+TraCeR \cite{Joshi2019-og} &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\teichlab/tracer\end{tabular} &
+  Python &
+  TCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.815,0.96,0.655}Partially \\
+VDJ Puzzle  \cite{Rizzetto2018-nj} &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\simone-rizzetto/VDJPuzzle\end{tabular} &
+  Java &
+  TCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.815,0.96,0.655}Partially \\
+TRAPes \cite{Joshi2019-og} &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\YosefLab/TRAPeS\end{tabular} &
+  C++ &
+  TCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No &
+  \cellcolor[rgb]{0.7,0.1,0.1}No \\
+scirpy &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\?\end{tabular} &
+  Python &
+  TCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Yes &
+  \cellcolor[rgb]{0.1,0.7,0.1}Extensively\\\hline
+\end{tabular}
+\caption{\label{tab:Suppl1}Comparison of scirpy with currently available tools for immune repertoire analysis and visualization at the single cell level.}
+\end{table}
+
+\printbibliography[title={References}]
+
+\end{document}
