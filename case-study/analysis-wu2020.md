@@ -7,7 +7,7 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.2'
-      jupytext_version: 1.3.2
+      jupytext_version: 1.4.1
 ---
 
 # Analysis of 3k T cells from cancer
@@ -55,17 +55,17 @@ The dataset ships with the `scirpy` package. We can conveniently load it from th
 adata = ir.datasets.wu2020()
 ```
 
-<!-- #raw raw_mimetype="text/restructuredtext" -->
-`adata` is a regular :class:`~anndata.AnnData` object:
-<!-- #endraw -->
-
-```python
-adata.shape
-```
-
 ```python
 adata = adata[adata.obs["has_tcr"] == "True", :]
 ```
+
+```python
+sc.pp.subsample(adata, n_obs=20000)
+```
+
+<!-- #raw raw_mimetype="text/restructuredtext" -->
+`adata` is a regular :class:`~anndata.AnnData` object:
+<!-- #endraw -->
 
 ```python
 adata.shape
@@ -270,7 +270,7 @@ sc.settings.verbosity = 4
 
 ```python
 %%time
-ir.pp.tcr_neighbors(adata, strategy="all", chains="primary_only", cutoff=0, n_jobs=42)
+ir.pp.tcr_neighbors(adata, strategy="all", chains="primary_only", cutoff=0)
 ```
 
 ```python
