@@ -181,6 +181,7 @@ about the T cell receptor compositions to `adata.obs`. We can visualize it using
 <!-- #endraw -->
 
 ```python
+%%time
 ir.tl.chain_pairing(adata)
 ```
 
@@ -270,10 +271,11 @@ sc.settings.verbosity = 4
 
 ```python
 %%time
-ir.pp.tcr_neighbors(adata, strategy="all", chains="primary_only", cutoff=0)
+ir.pp.tcr_neighbors(adata, strategy="all", merge_chains="primary_only", metric="alignment", cutoff=20)
 ```
 
 ```python
+%%time
 ir.tl.define_clonotypes(adata)
 ```
 
@@ -286,8 +288,12 @@ We can then visualize it using :func:`scirpy.pl.clonotype_network`. We recommend
 <!-- #endraw -->
 
 ```python
-ir.tl.clonotype_network(adata, min_size=2)
-ir.pl.clonotype_network(adata, color="clonotype", legend_loc="none")
+%%time
+ir.tl.clonotype_network(adata, min_size=8, layout="fr")
+```
+
+```python
+ir.pl.clonotype_network(adata, color="clonotype", legend_loc="none", size=40, edges=False)
 ```
 
 Let's re-compute the network with a `cutoff` of `15`.
