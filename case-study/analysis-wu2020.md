@@ -60,11 +60,10 @@ def fast_subset(adata, mask):
 ```
 
 ```python
-def weblogo(seqs):
+def weblogo(seqs, title=""):
     """Draw a sequence logo from a list of amino acid sequences. """
     logodata = LogoData.from_seqs(SeqList(seqs, alphabet=unambiguous_protein_alphabet))
-    logooptions = LogoOptions()
-    logooptions.title = "A Logo Title"
+    logooptions = LogoOptions(logo_title=title)
     logoformat = LogoFormat(logodata, logooptions)
     display(Image(png_formatter(logodata, logoformat)))
 ```
@@ -353,9 +352,10 @@ with pd.option_context('display.max_rows', 8):
     display(orig_in_nt[orig_in_nt[0] > 1])
 ```
 
-Now, also the number of clonotypes is consistent
+Now, also the number of clonotypes is consistent:
 
 ```python
+assert adata.obs["clonotype_orig"].unique().size == adata.obs.groupby(["patient", "clonotype_nt"]).size().reset_index().shape[0]
 print(f"""Number of clonotypes according to Wu et al.: {adata.obs["clonotype_orig"].unique().size}""")
 print(f"""Number of clonotypes according to scirpy: {adata.obs.groupby(["clonotype_nt"]).size().reset_index().shape[0]}""")
 print(f"""Number of clonotypes according to scirpy, within patient: {adata.obs.groupby(["patient", "clonotype_nt"]).size().reset_index().shape[0]}""")
@@ -364,90 +364,143 @@ print(f"""Number of clonotypes according to scirpy, within patient: {adata.obs.g
 ### amino-acid vs. nucleotide-based
 
 
-## Identity vs. Alignment
+For a few clonotypes, we observe differences comparing the amino-accid vs. nucleotide-based approach for defining clonotypes. 
+Clonotypes with the same amino acid sequence but different nucleotide sequences recognize the same antigen - 
+but derive from different antedescent cells. This can be an example of convergent evolution. 
 
 ```python
+ir.pl.clonotype_network(adata,
+                        color=["clonotype", "clonotype_nt"],
+                        edges=False, size=50, ncols=2, 
+                        legend_fontoutline=2,
+                        legend_loc=["on data", "none"])
+```
+
+```python
+nt_in_aa = adata.obs.groupby(["clonotype_nt", "clonotype"]).size().reset_index().groupby(["clonotype"]).size().reset_index()
+convergent_clonotypes = nt_in_aa.loc[nt_in_aa[0] > 1, "clonotype"]
+```
+
+```python
+adata.obs["is_convergent"] = ["convergent" if x else "-" for x in adata.obs["clonotype"].isin(convergent_clonotypes)]
+```
+
+```python
+sc.pl.umap(adata, color="is_convergent", groups=["convergent"], size=[10 if x == "convergent" else 3 for x in adata.obs["is_convergent"]])
+```
+
+The phonomenon appears to primarily occur in CD8+ effector and tissue resident T cells: 
+
+```python
+ir.pl.group_abundance(adata, groupby="cluster", target_col="is_convergent", fraction=True)
+```
+
+## amino-acid identity vs. alignment distance
+When computing the alignment distance, we allowed a distance of `15`, based on the BLOSUM62 matrix. 
+This is eqivalent of three `A`s mutating into `R`. 
+
+The alignment distance allows us to identify similar CDR3 sequences, that likely recognize the same epitope. 
+
+For the following visualization, we exclude cells with *Orphan* chains. Having only one chain that 
+needs to match there tend to be a lot of similar cells within a distance of `15` resulting in 
+large, uninformative networks for those cells. 
+
+```python
+%%time
 adata_sub = adata[~adata.obs["chain_pairing"].str.startswith("Orphan"), :]
 ```
 
 ```python
 %%time
-ir.tl.clonotype_network(adata_sub, min_size=50, layout="components", neighbors_key="ct_al_15", key_clonotype_size="clonotype_alignment_size")
+ir.tl.clonotype_network(adata_sub, min_size=50, layout="components", neighbors_key="tcr_neighbors_al15", key_clonotype_size="clonotype_alignment_size")
+```
+
+Let's have a look at two clonotypes that seem particularly interesting: `1626` and `1261`, highlighted in the following plot.
+
+* clonotype `1626` is likely another example of convergent evolution. It consists of three highly similar sequencesand occurs in the same patient.
+* clonotype `1261` is distributed across two patients. Potentially they target an epitope of a common pathogen rather than a patient-specific cancer epitope. 
+
+```python
+ir.pl.clonotype_network(adata_sub, color=["clonotype_alignment"], groups=["1626", "1261"], edges=False, size=50, ncols=2, legend_loc="on data", legend_fontoutline=3)
 ```
 
 ```python
-ir.pl.clonotype_network(adata_sub, color=["clonotype_alignment", "clonotype", "patient"], edges=False, size=50, ncols=2, legend_loc=["on data", "none", "none", "right margin"], legend_fontoutline=2)
+ir.pl.clonotype_network(adata_sub, color=["clonotype", "patient"], edges=False, size=50, ncols=2, legend_loc=["none", "right margin"], legend_fontoutline=2)
 ```
 
-CT`1626` seems particularly interesting
+### Sequence logos of Clonotype 1626
 
 ```python
-
-```
-
-```python
-
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1626", ["TRA_1_cdr3"]].values, title="clonotype 1626 - ALPHA chain")
 ```
 
 ```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1626", ["TRA_1_cdr3"]].values)
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1626", ["TRB_1_cdr3"]].values, title="clonotype 1626 - BETA chain")
+```
+
+### Sequence logos of Clonotype 1261
+1261 appears to occur across two lung cancer patients
+
+```python
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1261", ["TRA_1_cdr3"]].values, title="clonotype 1261 - ALPHA chain")
 ```
 
 ```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1626", ["TRB_1_cdr3"]].values)
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1261", ["TRB_1_cdr3"]].values, title="clonotype 1261 - BETA chain")
 ```
 
-```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "5304", ["TRA_1_cdr3"]].values)
-```
-
-```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "5304", ["TRB_1_cdr3"]].values)
-```
-
-## 1261 appears to occur across two lung cancer patients
-
-```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1261", ["TRB_1_cdr3"]].values)
-```
-
-```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1261", ["TRA_1_cdr3"]].values)
-```
-
-In [vdjdb](https://vdjdb.cdr3.net/search), we find a match for `CAV[STR][LG]QAGTALIF` as TRA sequence for Cytomegalievirus (CMV) and the closest match (2 substitutions) for TRB is CMV as well. 
+The clonotype `1261` epitope could be specific for an Human Cytomegalievirus (CMV) antigen. 
+ * In [vdjdb](https://vdjdb.cdr3.net/search), we find a CMV-specific alpha-chain searching with the `CAV[STR][LG]QAGTALIF` pattern. 
+ * Searching for the beta-chain pattern does not yield a direct result. However, allowing up to two substitutions, we find a CMV-specific chain as well. 
 
 
 ## Clonal expansion
- * fraction of expanded clonotype
-     - across patients
-     - across clusters
-     - across sources
+In this section, we assess the clonal expansion
+
+ - across patients
+ - across clusters
+ - across tissue sources
+ 
+With the `pl.clonal_expansion` function, we can easily visualize the clonal expansion
+by different variables. Per default, the plot shows the fraction of
+cells belonging to an expanded clonotype. 
+
+### clonal expansion across patients
 
 ```python
-ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="cell", show_nonexpanded=True)
+ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="cell", show_nonexpanded=True, fig_kws={"dpi":100})
 ```
 
+Alternatively, we can show the *fraction of expanded clonotypes*. 
+
 ```python
-ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="clonotype", show_nonexpanded=False)
+ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="clonotype", show_nonexpanded=False, fig_kws={"dpi":100})
 ```
+
+In the paper, the authors state that depending on the patient, between 9 and 18% of clonotypes
+are expanded. Our results are highly consistent with these results: 
 
 ```python
 fraction_expanded = ir.tl.summarize_clonal_expansion(adata, groupby="patient", summarize_by="clonotype", normalize=True).drop("1", axis="columns").sum(axis=1)
 ```
 
 ```python
-min(fraction_expanded), max(fraction_expanded)
+print(f"Between {min(fraction_expanded):.1%} and {max(fraction_expanded):.1%} of clonotypes are expanded.")
 ```
 
-### across clusters
+### clonal expansion across cell-type clusters
+We observe that clonal expansion is highest among the CD8+ T-cell clusters, in particular effector and tissue-resident T cells. 
 
 ```python
 ir.pl.clonal_expansion(adata, groupby="cluster_orig", summarize_by="cell", show_nonexpanded=True, fig_kws={"dpi": 120})
 ```
 
+### clonal expansion across tissue sources
+The fraction of expanded cell is roughly equivalent among tumor and ajacent normal tissue, but lower in 
+blood. 
+
 ```python
-ir.pl.clonal_expansion(adata, groupby="source", summarize_by="cell", show_nonexpanded=True, fig_kws={"dpi": 120})
+ir.pl.clonal_expansion(adata, groupby="source", summarize_by="cell", show_nonexpanded=True)
 ```
 
 ## Dual- and blood expanded clonotypes
