@@ -162,7 +162,7 @@ We can confirm that the markers correspond to their respective cluster labels.
 sc.pl.umap(adata, color=["sample", "patient", "cluster", "CD8A", "CD4", "FOXP3"], ncols=2, wspace=.5)
 ```
 
-## TCR Quality Control
+### TCR Quality Control
 
 <!-- #region raw_mimetype="text/restructuredtext" -->
 While most of T cell receptors have exactly one pair of α and β chains, up to one third of 
@@ -222,7 +222,7 @@ adata = adata[adata.obs["chain_pairing"] != "Multichain", :].copy()
 adata.shape
 ```
 
-## Define clonotypes
+## 2. Define clonotypes
 
 Defining clonotypes in `scirpy` is a two-step procedure: 
 
@@ -288,7 +288,7 @@ ir.tl.define_clonotypes(adata, neighbors_key="tcr_neighbors_al15", key_added="cl
 ```
 
 <!-- #region raw_mimetype="text/restructuredtext" -->
-## Visualizing clonotype networks
+### Visualizing clonotype networks
 To visualize the network we first call `scirpy.tl.clonotype_network` to compute the layout.
 We can then visualize it using `scirpy.pl.clonotype_network`. 
 
@@ -310,7 +310,7 @@ ir.pl.clonotype_network(adata,
                         legend_loc=["on data", "right margin"])
 ```
 
-## Clonotype consistency
+## 3. Clonotype consistency
 
 Before we dive into the analysis of clonal expansion, we compare the different approaches of clonotype definition. 
 
@@ -408,7 +408,7 @@ The phonomenon appears to primarily occur in CD8+ effector and tissue resident T
 ir.pl.group_abundance(adata, groupby="cluster", target_col="is_convergent", fraction=True)
 ```
 
-## amino-acid identity vs. alignment distance
+### amino-acid identity vs. alignment distance
 When computing the alignment distance, we allowed a distance of `15`, based on the BLOSUM62 matrix. 
 This is eqivalent of three `A`s mutating into `R`. 
 
@@ -467,7 +467,7 @@ The clonotype `1261` epitope could be specific for an Human Cytomegalievirus (CM
  * Searching for the beta-chain pattern does not yield a direct result. However, allowing up to two substitutions, we find a CMV-specific chain as well. 
 
 
-## Clonal expansion
+## 4. Clonal expansion
 In this section, we assess the clonal expansion
 
  - across patients
@@ -516,7 +516,7 @@ blood.
 ir.pl.clonal_expansion(adata, groupby="source", summarize_by="cell", show_nonexpanded=True)
 ```
 
-## Dual- and blood expanded clonotypes
+## 5. Dual- and blood expanded clonotypes
 Finally, we will divide the clonotypes into different categories, based on their expansion in blood, tissue and tumor samples. 
 
 In particular, we will
