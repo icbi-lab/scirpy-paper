@@ -68,6 +68,19 @@ def weblogo(seqs, title=""):
     display(Image(png_formatter(logodata, logoformat)))
 ```
 
+```python
+# colors from the paper
+colors = {
+    "Dual expanded": "#9458a2",
+    "Tumor singleton": "#ff8000",
+    "NAT singleton": "#f7f719",
+    "Tumor multiplet": "#eeb3cb",
+    "NAT multiplet": "#9cd0de",
+    "Blood singleton": "#cce70b",
+    "Blood multiplet": "#beac83"
+}
+```
+
 ## 1. Preparing the data
 
 <!-- #region raw_mimetype="text/restructuredtext" -->
@@ -323,7 +336,7 @@ Next, we check if there are *clonotypes in `clonotype_nt` that contain multiple 
 ```python
 # the clonotypes in clonotype_nt that contain multiple clonotype_orig
 orig_in_nt = adata.obs.groupby(["clonotype_nt", "clonotype_orig"]).size().reset_index().groupby("clonotype_nt").size().reset_index()
-with pd.option_context('display.max_rows', 10):
+with pd.option_context('display.max_rows', 8):
     display(orig_in_nt[orig_in_nt[0] > 1])
 ```
 
@@ -504,10 +517,15 @@ ir.pl.clonal_expansion(adata, groupby="source", summarize_by="cell", show_nonexp
 ```
 
 ## Dual- and blood expanded clonotypes
-* identify dual-expanded clonotypes
-     - abundance across patients/tumor types
-     - abundance across clusters
+Finally, we will divide the clonotypes into different categories, based on their expansion in blood, tissue and tumor samples. 
+
+In particular, we will
+ * identify *dual-expanded* clonotypes, which are expanded in both adjacent tissue and tumor samples
  * identify blood-expanded clonotypes
+
+and compare their abundance across cell-types and patients. 
+
+For an illustration, please refer to Fig. 1b of the *Wu et al. (2020)* paper. 
 
 ```python
 clonotype_size_by_source = adata.obs.groupby(["patient", "source", "clonotype"], observed=True).size().reset_index(name="clonotype_count_by_source")
@@ -528,10 +546,6 @@ for is_expanded, source in zip((adata.obs["source"] == "Blood") & (adata.obs["cl
 
 ```python
 adata.obs["blood_expanded"] = blood_expanded
-```
-
-```python
-sc.pl.umap(adata, color="blood_expanded", groups=["expanded", "not expanded"], size=[15 if x in ["expanded", "not expanded"] else 3 for x in adata.obs["blood_expanded"]])
 ```
 
 ```python
@@ -567,15 +581,8 @@ assert len(expansion_category) == adata.n_obs
 ```
 
 ```python
-colors = {
-    "Dual expanded": "#9458a2",
-    "Tumor singleton": "#ff8000",
-    "NAT singleton": "#9cd0de",
-    "Tumor multiplet": "#eeb3cb",
-    "NAT multiplet": "#9cd0de",
-    "Blood singleton": "#cce70b",
-    "Blood multiplet": "#beac83"
-}
+adata.obs["cell_type"] = adata.obs["cluster_orig"].str[0]
+adata.obs["tumor_type"] = adata.obs["patient"].str[:-1]
 ```
 
 ```python
@@ -588,16 +595,10 @@ adata._sanitize()
 adata.uns["expansion_category_colors"] = [colors[x] for x in adata.obs["expansion_category"].cat.categories]
 ```
 
-```python
-ir.pl.clonal_expansion(adata, groupby="expansion_category")
-```
+Mostly CD8+ effector and tissue-resident T cells are blood-expanded and dual-expanded: 
 
 ```python
-adata.obs["cell_type"] = adata.obs["cluster_orig"].str[0]
-```
-
-```python
-adata.obs["tumor_type"] = adata.obs["patient"].str[:-1]
+sc.pl.umap(adata, color="blood_expanded", groups=["expanded", "not expanded"], size=[15 if x in ["expanded", "not expanded"] else 3 for x in adata.obs["blood_expanded"]])
 ```
 
 ```python
@@ -606,58 +607,59 @@ sc.pl.umap(adata, color=["expansion_category", "cluster"], wspace=.3, size=5)
 
 ```python
 ir.pl.group_abundance(
-    adata, groupby="cluster", target_col="expansion_category", fraction=True
-)
-```
-
-```python
-ir.pl.group_abundance(
     adata, groupby="tumor_type", target_col="expansion_category", fraction=True
 )
 ```
 
+The fraction of blood-expanded, blood non-expanded and blood-independent cells 
+for the four patients with blood samples
+
 ```python
 ir.pl.group_abundance(
-    adata, groupby="patient", target_col="blood_expanded", fraction=True
+    adata[adata.obs["patient"].isin(["Lung6", "Renal1", "Renal2", "Renal3"]), :],
+    groupby="patient",
+    target_col="blood_expanded",
+    fraction=True
 )
 ```
 
-```python
-%%time
-adata_lung6 =adata[adata.obs["patient"] == "Lung6", :]
-```
+Tissue infiltration patterns. The bar plots show the distribution of cells by tissue expansion patterns from 
+blood-indpendned, non-expanded and expanded clones. 
 
 ```python
-fig, ax = subplots(2,2, figsize=(10, 8))
-ir.pl.group_abundance(
-    adata, groupby="blood_expanded", target_col="expansion_category", fraction=True
-)
-```
-
-```python jupyter={"outputs_hidden": true}
 for patient in ["Lung6", "Renal1", "Renal2", "Renal3"]:
-    ir.pl.group_abundance(
-        adata[adata.obs["patient"] == patient,:], groupby="blood_expanded", target_col="expansion_category", fraction=True)
+    ax = ir.pl.group_abundance(
+        adata[adata.obs["patient"] == patient,:],
+        groupby="blood_expanded", 
+        target_col="expansion_category", 
+        fraction=True)
+    ax.set_title(patient)
+```
+
+Tissue expansion patterns of T cell by cluster. 
+
+```python
+for subset in [["NAT singleton", "NAT multiplet"], ["Tumor singleton", "Tumor multiplet"]]:
+    ax = ir.pl.group_abundance(
+    adata[adata.obs["expansion_category"].isin(subset),:],
+    groupby="cluster_orig", 
+    target_col="expansion_category", 
+    fraction=False,
+    fig_kws={"dpi": 120}
+    )
+    ax.set_title(subset[0].split()[0]) 
 ```
 
 ```python
-
-```
-
-```python
-adata.obs["expansion_category"].cat.categories
-```
-
-```python
-
-```
-
-```python
-sc.pl.umap(adata, color=["expansion_category"], wspace=.3, size=5)
-```
-
-```python
-adata.uns["expansion_category_cocatrs"]
+for source in ["NAT", "Tumor"]:
+    ax = ir.pl.group_abundance(
+    adata[(adata.obs["source"] == source) & (adata.obs["expansion_category"] == "Dual expanded"),:],
+    groupby="cluster_orig", 
+    target_col="expansion_category", 
+    fraction=False,
+    fig_kws={"dpi": 120}
+    )
+    ax.set_title(source)
 ```
 
 ```python
