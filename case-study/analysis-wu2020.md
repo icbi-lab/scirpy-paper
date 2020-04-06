@@ -7,10 +7,11 @@ jupyter:
       extension: .md
       format_name: markdown
       format_version: '1.2'
-      jupytext_version: 1.3.2
+      jupytext_version: 1.3.3
 ---
 
-# Analysis of 3k T cells from cancer
+# Analysis of 140k T cells from cancer
+~100k of which have TCR
 
 <!-- #raw raw_mimetype="text/restructuredtext" -->
 In this tutorial, we re-analize single-cell TCR/RNA-seq data from Wu et al (:cite:`Wu2020`)
@@ -53,6 +54,23 @@ import numpy as np
 import scanpy as sc
 from matplotlib import pyplot as plt
 import matplotlib
+```
+
+```python
+def fast_subset(adata, mask):
+    """Subsetting adata with columns with many categories takes forever. 
+    The reason is that `remove_unused_categories` from pandas is super slow. 
+    Need to report that to the pandas devs at some point or work around it
+    in AnnData. 
+    
+    In the meanwhile, subset adata by copying it, subsetting the `obs` dataframe
+    individually and re-adding it to the copy.  
+    """
+    adata2 = adata.copy()
+    adata2.obs = pd.DataFrame(adata.obs.index)
+    adata2 = adata2[mask, :].copy()
+    adata2.obs = adata.obs.loc[mask, :]
+    return adata2
 ```
 
 ```python
@@ -228,7 +246,7 @@ adata.write_h5ad("./adata_in.h5ad")
 ```
 
 ```python
-adata = sc.read_h5ad("./adata_alignment2.h5ad")
+adata = sc.read_h5ad("./adata_alignment3.h5ad")
 ```
 
 ```python
@@ -244,6 +262,11 @@ ir.tl.define_clonotypes(adata, neighbors_key="tcr_neighbors", key_added="clonoty
 ```python
 %%time
 ir.tl.define_clonotypes(adata, neighbors_key="ct_al_15", key_added="clonotype_alignment")
+```
+
+```python
+%%time
+ir.tl.define_clonotypes(adata, neighbors_key="ct_al_10", key_added="clonotype_alignment_10")
 ```
 
 <!-- #raw raw_mimetype="text/restructuredtext" -->
@@ -305,158 +328,112 @@ with pd.option_context('display.max_rows', 8):
 ```
 
 ```python
-adata.obs["ct_nt_patient"] = [f"{ct}_{patient}" for ct, patient in zip(adata.obs["clonotype_nt"], adata.obs["patient"])]
+adata.obs.groupby(["clonotype_nt", "patient"]).size().reset_index().shape
 ```
 
 ```python
-adata.obs["tumor_type"] = adata.obs["patient"].str[:-1]
+adata.obs["clonotype_orig"].unique().size
+```
+
+## Identity vs. Alignment
+
+```python
+adata_sub = adata[~adata.obs["chain_pairing"].str.startswith("Orphan"), :]
 ```
 
 ```python
-adata.obs["cell_type_coarse"] = adata.obs["cluster_orig"].str[0]
+%%time
+ir.tl.clonotype_network(adata_sub, min_size=50, layout="components", neighbors_key="ct_al_15", key_clonotype_size="clonotype_alignment_size")
 ```
 
 ```python
-adata.obs["ct_source"] = [ct + "_" + source for ct, source in zip(adata.obs["cell_type_coarse"], adata.obs["source"])]
+ir.pl.clonotype_network(adata_sub, color=["clonotype_alignment", "clonotype", "patient"], edges=False, size=50, ncols=2, legend_loc=["on data", "none", "none", "right margin"], legend_fontoutline=2)
+```
+
+CT`1626` seems particularly interesting
+
+```python
+!pip install weblogo
 ```
 
 ```python
-ir.pl.clonotype_network(adata, color=["clonotype"], edges=False, size=50, ncols=2)
+LogoData.from_seqs()
 ```
 
 ```python
-pd.set_option("display.max_rows", 600)
+from weblogo.seq import SeqList, protein_alphabet, unambiguous_protein_alphabet
+from weblogo import png_formatter, png_print_formatter
+from weblogo import LogoData, LogoOptions, LogoFormat
+from IPython.display import Image, display
 ```
 
 ```python
-adata.obs.loc[adata.obs["clonotype"] == "6551", ["clonotype_orig", "TRA_1_cdr3", "TRA_2_cdr3", "TRB_1_cdr3", "TRB_2_cdr3", "TRB_1_cdr3_nt"]]
-```
-
-## Clonotype specificity
-
- * sample-specific
- * patient-specific
- * shared across patients
-
-```python
-adata = sc.read_h5ad("adata_alignment.h5ad")
+def weblogo(seqs):
+    logodata = LogoData.from_seqs(SeqList(seqs, alphabet=unambiguous_protein_alphabet))
+    logooptions = LogoOptions()
+    logooptions.title = "A Logo Title"
+    logoformat = LogoFormat(logodata, logooptions)
+    display(Image(png_formatter(logodata, logoformat)))
 ```
 
 ```python
-adata.uns
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1626", ["TRA_1_cdr3"]].values)
 ```
 
 ```python
-ir.tl.define_clonotypes(adata, neighbors_key="ct_al_15", partitions="connected", key_added="clonotype_align")
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1626", ["TRB_1_cdr3"]].values)
 ```
 
 ```python
-clonotypes_align = adata.obs["clonotype_align"][adata.obs["clonotype_align_size"] > 30].unique()
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "5304", ["TRA_1_cdr3"]].values)
 ```
 
 ```python
-clonotypes_id = adata.obs["clonotype"][adata.obs["clonotype_size"] > 30].unique()
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "5304", ["TRB_1_cdr3"]].values)
+```
+
+## 1261 appears to occur across two lung cancer patients
+
+```python
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1261", ["TRB_1_cdr3"]].values)
 ```
 
 ```python
-ir.tl.clonotype_network(adata, min_size=30, layout="components", neighbors_key="ct_al_15", key_clonotype_size="clonotype_align_size")
+weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1261", ["TRA_1_cdr3"]].values)
+```
+
+In [vdjdb](https://vdjdb.cdr3.net/search), we find a match for `CAV[STR][LG]QAGTALIF` as TRA sequence for Cytomegalievirus (CMV) and the closest match (2 substitutions) for TRB is CMV as well. 
+
+
+## Clonal expansion
+ * fraction of expanded clonotype
+     - across patients
+     - across clusters
+     - across sources
+
+```python
+ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="clonotype", show_nonexpanded=False)
 ```
 
 ```python
-ir.pl.clonotype_network(adata, color=["clonotype", "patient", "clonotype_align"], legend_loc=["none", "none", "on data"], edges=False, size=30)
+fraction_expanded = ir.tl.summarize_clonal_expansion(adata, groupby="patient", summarize_by="clonotype", normalize=True).drop("1", axis="columns").sum(axis=1)
 ```
 
 ```python
-adata.obs.loc[adata.obs["clonotype_align"] == "8007", ["TRA_1_cdr3", "TRA_2_cdr3", "TRB_2_cdr3", "TRB_1_cdr3", "patient", "source"]]
+min(fraction_expanded), max(fraction_expanded)
 ```
+
+### across clusters
 
 ```python
-for ct, ct_size, ct_align, ct_align_size in zip(adata.obs["clonotype"], adata.obs["clonotype_size"], adata.obs[""])
+ir.pl.clonal_expansion(adata, groupby="cluster_orig", summarize_by="cell", show_nonexpanded=False, fig_kws={"dpi": 120})
 ```
 
-```python
-adata_sub.obs["clonotype"].unique()
-```
-
-```python
-ct_base = set(adata.obs["clonotype"][adata.obs["clonotype_size"] > 20].unique())
-```
-
-```python
-
-```
-
-```python
-clonotypes = adata.obs["clonotype"].unique()
-```
-
-```python
-len(clonotypes)
-```
-
-```python
-sample_clonotypes = adata.obs.groupby(["clonotype", "sample"]).size().reset_index().groupby("clonotype").size().reset_index()
-```
-
-```python
-sample_clonotypes.groupby(0).size()
-```
-
-```python
-clonotypes_multiple_samples = sample_clonotypes[sample_clonotypes[0] == 3]["clonotype"].values
-```
-
-```python
-patient_clonotypes = adata.obs.groupby(["clonotype", "patient"]).size().reset_index().groupby("clonotype").size().reset_index()
-```
-
-```python
-patient_clonotypes.groupby(0).size()
-```
-
-```python
-global_clonotypes = patient_clonotypes[patient_clonotypes[0] > 1]["clonotype"].values
-```
-
-```python
-adata_sub = fast_subset(adata, adata.obs["clonotype"].isin(clonotypes_multiple_samples))
-```
-
-```python
-ir.tl.clonotype_network(adata, layout="components", neighbors_key="ct_al_25", min_size=50)
-```
-
-```python
-ir.pl.clonotype_network(adata, color="clonotype", edges=False, legend_loc="none", size=40)
-```
-
-```python
-adata2 = sc.read_h5ad("adata_alignment.h5ad")
-```
-
-```python
-adata2.uns
-```
-
-```python
-ir.tl.define_clonotypes(adata2, neighbors_key="ct_al_15_all_chains")
-```
-
-```python
-ir.tl.clonotype_network(adata2, neighbors_key="ct_al_15_all_chains", min_size=50, layout="components")
-```
-
-```python
-adata_sub = fast_subset(adata2, ~adata.obs["chain_pairing"].str.startswith("Orphan"))
-```
-
-```python
-ir.pl.clonotype_network(adata_sub, color=["clonotype", "clonotype_orig", "patient"], edges=False, size=30, legend_loc=["on data", "none", "none"])
-```
-
-```python
-adata.obs.loc[adata.obs["clonotype"] == "12508", ["TRA_1_cdr3", "TRB_1_cdr3"]]
-```
+## Dual- and blood expanded clonotypes
+* identify dual-expanded clonotypes
+     - abundance across patients/tumor types
+     - abundance across clusters
+ * identify blood-expanded clonotypes
 
 ```python
 clonotype_membership = {ct: list() for ct in adata.obs["clonotype"]}
