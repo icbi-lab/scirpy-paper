@@ -30,12 +30,14 @@ import scirpy as ir
 import pandas as pd
 import numpy as np
 import scanpy as sc
+import scipy as sp
 from matplotlib import pyplot as plt
 import matplotlib
 from weblogo.seq import SeqList, unambiguous_protein_alphabet
 from weblogo import png_formatter
 from weblogo import LogoData, LogoOptions, LogoFormat
 from IPython.display import Image, display
+sc.settings._vector_friendly = True
 ```
 
 ```python
@@ -104,6 +106,14 @@ adata = adata[~(adata.obs["cluster_orig"] == "nan"), :]
 
 ```python
 adata.shape
+```
+
+```python
+adata.obs.columns
+```
+
+```python
+adata.obs["counts"] = adata.X.sum(axis=1).A1
 ```
 
 ### Preprocess Transcriptomics data
@@ -207,7 +217,20 @@ print("Fraction of cells with more than one pair of TCRs: {:.2f}".format(
 Next, we visualize the _Multichain_ cells on the UMAP plot and exclude them from downstream analysis:
 
 ```python
-sc.pl.umap(adata, color="chain_pairing", groups="Multichain", size=[30 if x == "Multichain" else 3 for x in adata.obs["chain_pairing"]])
+_, pvalue = sp.stats.mannwhitneyu(adata.obs.loc[adata.obs["multi_chain"] == "True", "counts"].values, adata.obs.loc[adata.obs["multi_chain"] == "False", "counts"].values)
+```
+
+```python
+fig, (ax1, ax2) =plt.subplots(1,2, figsize=(8, 4), gridspec_kw={'width_ratios': [2, 1]})
+sc.pl.umap(adata, color="chain_pairing", groups="Multichain", size=[30 if x == "Multichain" else 3 for x in adata.obs["chain_pairing"]], ax=ax1, legend_loc="none", show=False, frameon=False, title="Multichain UMAP")
+sc.pl.violin(adata, "counts", "multi_chain", ax=ax2, show=False)
+ax2.set_ylabel("detected reads")
+ax2.set_xlabel("")
+ax2.set_xticklabels(["other", "multichain"])
+ax2.set_title("detected reads per cell")
+ax2.text(.3, 50000, f"p={pvalue:.2E}")
+plt.subplots_adjust(wspace=0.5)
+fig.savefig("figures/multichains.svg", dpi=600)
 ```
 
 ```python
@@ -481,13 +504,17 @@ cells belonging to an expanded clonotype.
 ### clonal expansion across patients
 
 ```python
-ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="cell", show_nonexpanded=True, fig_kws={"dpi":100})
+fig, ax = plt.subplots(dpi=100)
+ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="cell", show_nonexpanded=True, ax=ax)
+fig.savefig("figures/expansion_patients_cell.svg")
 ```
 
 Alternatively, we can show the *fraction of expanded clonotypes*. 
 
 ```python
-ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="clonotype", show_nonexpanded=False, fig_kws={"dpi":100})
+fig, ax = plt.subplots(dpi=100)
+ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="clonotype", show_nonexpanded=False, colors=["#FF7F0E", "#2CA02C"], ax=ax)
+fig.savefig("figures/expansion_patients_clonotype.svg")
 ```
 
 In the paper, the authors state that depending on the patient, between 9 and 18% of clonotypes
@@ -602,7 +629,35 @@ sc.pl.umap(adata, color="blood_expanded", groups=["expanded", "not expanded"], s
 ```
 
 ```python
-sc.pl.umap(adata, color=["expansion_category", "cluster"], wspace=.3, size=5)
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8.5, 4), dpi=300)
+sc.pl.umap(adata, color="expansion_category", legend_loc="none", show=False, ax=ax1, frameon=False)
+sc.pl.umap(adata, color="cluster_orig", legend_loc="on data", show=False, ax=ax2, legend_fontoutline=2, frameon=False)
+ax1.set_title("clonal expansion pattern")
+ax2.set_title("cell-type cluster")
+plt.subplots_adjust(wspace=.1)
+fig.savefig("figures/clonal_expansion_umap.svg")
+```
+
+```python
+ir.pl.group_abundance(
+    adata, groupby="cluster_orig", target_col="expansion_category", fraction=True, fig_kws={"dpi": 120}, sort="alphabetical"
+)
+```
+
+```python
+fig, ax = plt.subplots(dpi=120)
+ir.pl.group_abundance(
+    adata, groupby="cluster_orig", target_col="expansion_category", fraction=False, ax=ax, sort="alphabetical"
+)
+ax.set_title("")
+ax.set_xlabel("cluster")
+fig.savefig("figures/expansion_category_cluster.svg")
+```
+
+```python
+ir.pl.group_abundance(
+    adata, groupby="expansion_category", target_col="cluster_orig", fraction=True
+)
 ```
 
 ```python
