@@ -34,7 +34,7 @@ import scipy as sp
 from matplotlib import pyplot as plt
 import matplotlib
 from weblogo.seq import SeqList, unambiguous_protein_alphabet
-from weblogo import png_formatter
+from weblogo import png_formatter, svg_formatter, eps_formatter
 from weblogo import LogoData, LogoOptions, LogoFormat
 from IPython.display import Image, display
 sc.settings._vector_friendly = True
@@ -62,12 +62,15 @@ def fast_subset(adata, mask):
 ```
 
 ```python
-def weblogo(seqs, title=""):
+def weblogo(seqs, title="", format="png"):
     """Draw a sequence logo from a list of amino acid sequences. """
     logodata = LogoData.from_seqs(SeqList(seqs, alphabet=unambiguous_protein_alphabet))
     logooptions = LogoOptions(logo_title=title)
     logoformat = LogoFormat(logodata, logooptions)
-    display(Image(png_formatter(logodata, logoformat)))
+    if format == "png":
+        display(Image(png_formatter(logodata, logoformat)))
+    elif format == "eps":
+        return eps_formatter(logodata, logoformat)
 ```
 
 ```python
@@ -193,9 +196,14 @@ ir.tl.chain_pairing(adata)
 ```
 
 ```python
-ir.pl.group_abundance(
-    adata, groupby="chain_pairing", target_col="source",
+ax = ir.pl.group_abundance(
+    adata, groupby="chain_pairing", target_col="has_tcr", fraction="has_tcr"
 ) 
+ax.set_ylabel("fraction of cells")
+ax.set_xlabel("chain pairing")
+ax.set_title("")
+fig = ax.get_figure()
+fig.savefig("figures/chain_pairing.svg")
 ```
 
 Indeed, in this dataset, ~7% of cells have more than a one pair of productive T-cell receptors:
@@ -337,7 +345,7 @@ ir.pl.clonotype_network(adata,
 
 Before we dive into the analysis of clonal expansion, we compare the different approaches of clonotype definition. 
 
-### nucleotide based (scirpy vs. Wu et al.)
+### 3.1 nucleotide based (scirpy vs. Wu et al.)
 In this section, we compare the clonotypes assigned by `scirpy` assigned to the clonotypes assigned by the authors of the study. 
 The original clonotypes are stored in the `clonotype_orig` column of `obs`. 
 
@@ -397,7 +405,7 @@ print(f"""Number of clonotypes according to scirpy: {adata.obs.groupby(["clonoty
 print(f"""Number of clonotypes according to scirpy, within patient: {adata.obs.groupby(["patient", "clonotype_nt"]).size().reset_index().shape[0]}""")
 ```
 
-### amino-acid vs. nucleotide-based
+### 3.2 amino-acid vs. nucleotide-based
 
 
 For a few clonotypes, we observe differences comparing the amino-accid vs. nucleotide-based approach for defining clonotypes. 
@@ -431,7 +439,7 @@ The phonomenon appears to primarily occur in CD8+ effector and tissue resident T
 ir.pl.group_abundance(adata, groupby="cluster", target_col="is_convergent", fraction=True)
 ```
 
-### amino-acid identity vs. alignment distance
+### 3.3 amino-acid identity vs. alignment distance
 When computing the alignment distance, we allowed a distance of `15`, based on the BLOSUM62 matrix. 
 This is eqivalent of three `A`s mutating into `R`. 
 
@@ -464,31 +472,101 @@ ir.pl.clonotype_network(adata_sub, color=["clonotype_alignment"], groups=["1626"
 ir.pl.clonotype_network(adata_sub, color=["clonotype", "patient"], edges=False, size=50, ncols=2, legend_loc=["none", "right margin"], legend_fontoutline=2)
 ```
 
-### Sequence logos of Clonotype 1626
-
 ```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1626", ["TRA_1_cdr3"]].values, title="clonotype 1626 - ALPHA chain")
+selected_clonotypes = ["10411", "5304", "1626", "632"]
 ```
 
 ```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1626", ["TRB_1_cdr3"]].values, title="clonotype 1626 - BETA chain")
-```
-
-### Sequence logos of Clonotype 1261
-1261 appears to occur across two lung cancer patients
-
-```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1261", ["TRA_1_cdr3"]].values, title="clonotype 1261 - ALPHA chain")
+%%capture
+fig, ax = plt.subplots(figsize=(10, 10), dpi=300)
+ir.pl.clonotype_network(adata_sub, color="clonotype", edges=False, size=50, legend_loc="none", ax=ax, frameon=False)
+ax.set_title("clonotypes")
+fig.savefig("figures/clonotype_network.svg")
 ```
 
 ```python
-weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == "1261", ["TRB_1_cdr3"]].values, title="clonotype 1261 - BETA chain")
+ax = ir.pl.group_abundance(adata_sub[adata_sub.obs["clonotype_alignment"].isin(selected_clonotypes), :], groupby="clonotype_alignment", sort=selected_clonotypes, target_col="patient")
+ax.xaxis.set_tick_params(rotation=0)
+for tick in ax.xaxis.get_majorticklabels():
+    tick.set_horizontalalignment("center")
+ax.tick_params(labelsize=10)
+fig = ax.get_figure()
+ax.set_title("")
+ax.set_xlabel("clonotype")
+fig.savefig("figures/clonotype_network_patients.svg")
+```
+
+#### Sequence logos
+
+```python
+for ct in selected_clonotypes:
+    for chain, chain_label in zip(["TRA_1_cdr3", "TRB_1_cdr3"], ["alpha", "beta"]):
+        with open(f"figures/logo_ct_{ct}_{chain_label}.eps", 'wb') as f:
+            f.write(weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == ct, chain].values, title=f"clonotype {ct}: {chain_label}-chain", format="eps"))
+```
+
+```python
+for ct in selected_clonotypes:
+    for chain, chain_label in zip(["TRA_1_cdr3", "TRB_1_cdr3"], ["alpha", "beta"]):
+        weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == ct, chain].values, title=f"clonotype {ct}: {chain_label}-chain", format="png")
 ```
 
 The clonotype `1261` epitope could be specific for an Human Cytomegalievirus (CMV) antigen. 
  * In [vdjdb](https://vdjdb.cdr3.net/search), we find a CMV-specific alpha-chain searching with the `CAV[STR][LG]QAGTALIF` pattern. 
  * Searching for the beta-chain pattern does not yield a direct result. However, allowing up to two substitutions, we find a CMV-specific chain as well. 
 
+
+#### convergent clonotypes
+We define a clonotype as being convergent, if there are different versions of nucleotide sequences for similar clonotypes, within the same patient.
+
+```python
+convergent_aa = adata.obs.groupby(["clonotype", "clonotype_alignment", "patient"]).size().reset_index().groupby(["clonotype_alignment", "patient"]).size().reset_index()
+convergent_nt = adata.obs.groupby(["clonotype_nt", "clonotype_alignment", "patient"]).size().reset_index().groupby(["clonotype_alignment", "patient"]).size().reset_index()
+convergent_clonotypes_aa = convergent_aa.loc[convergent_aa[0] > 1, "clonotype_alignment"].values
+convergent_clonotypes_nt = convergent_nt.loc[convergent_nt[0] > 1, "clonotype_alignment"].values
+```
+
+```python
+# convergent clonotypes, AA identity vs alignment
+adata.obs["convergent_aa"] = [str(x) for x in adata.obs["clonotype_alignment"].isin(convergent_clonotypes_aa) & ~adata.obs["chain_pairing"].str.startswith("Orphan")]
+# convergent clonotypes, NN identity vs AA alignment
+adata.obs["convergent_nt"] = [str(x) for x in adata.obs["clonotype_alignment"].isin(convergent_clonotypes_nt) & ~adata.obs["chain_pairing"].str.startswith("Orphan")]
+```
+
+```python
+sc.pl.umap(adata, color=["convergent_aa"], groups="True", size=[10 if x == "True" else 3 for x in adata.obs["convergent_aa"]])
+```
+
+```python
+sc.pl.umap(adata, color=["convergent_nt"], groups="True", size=[10 if x == "True" else 3 for x in adata.obs["convergent_nt"]])
+```
+
+```python
+%%capture
+fig, ax = plt.subplots(figsize=(4,4), dpi=300)
+sc.pl.umap(adata, color=["convergent_nt"], groups="True", size=[10 if x == "True" else 3 for x in adata.obs["convergent_nt"]], ax=ax, frameon=False, legend_loc="none", show=False)
+ax.set_title("convergent clonotypes")
+fig.savefig('figures/convergent_clonotypes_umap.svg')
+```
+
+```python
+ir.pl.group_abundance(adata_sub, groupby="cluster_orig", target_col="convergent_nt", fraction=True, sort="alphabetical")
+```
+
+#### Inspecting only converged clonotypes
+
+```python
+adata_converged = adata[(adata.obs["convergent_nt"] == "True") & ~adata.obs["chain_pairing"].str.startswith("Orphan"), :]
+```
+
+```python
+%%time
+ir.tl.clonotype_network(adata_converged, min_size=1, layout="components", neighbors_key="tcr_neighbors_al15", key_clonotype_size="clonotype_alignment_size")
+```
+
+```python
+ir.pl.clonotype_network(adata_converged, color=["clonotype_alignment", "clonotype_nt"], edges=False, size=50, ncols=2, legend_loc=["none", "none"], legend_fontoutline=2)
+```
 
 ## 4. Clonal expansion
 In this section, we assess the clonal expansion
@@ -724,6 +802,28 @@ for source in ["NAT", "Tumor"]:
     fig_kws={"dpi": 120}
     )
     ax.set_title(source)
+```
+
+## 6. Gene usage
+
+```python
+ax = ir.pl.vdj_usage(adata, full_combination=False, top_n=30)
+ax.set_ylabel("cells")
+ax.set_xlabel("VDJ segment")
+ax.set_title("VDJ usage")
+fig = ax.get_figure()
+fig.savefig("figures/vdj_usage.svg")
+```
+
+```python
+ax = ir.pl.spectratype(adata[adata.obs["TRB_1_j_gene"] != "None", :], groupby="TRB_1_cdr3", target_col="TRB_1_j_gene", fig_kws={"dpi": 120})
+ax.xaxis.set_tick_params(rotation=90)
+for tick in ax.xaxis.get_majorticklabels():
+    tick.set_horizontalalignment("center")
+ax.set_title("Spectratype of primary TCR-β chain")
+ax.set_xlabel("CDR3 sequence length")
+fig = ax.get_figure()
+fig.savefig("figures/spectratype.svg")
 ```
 
 ```python
