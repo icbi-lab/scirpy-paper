@@ -73,7 +73,7 @@ def weblogo(seqs, title=""):
 ```python
 # colors from the paper
 colors = {
-    "Dual expanded": "#9458a2",
+    "Tumor+NAT expanded": "#9458a2",
     "Tumor singleton": "#ff8000",
     "NAT singleton": "#f7f719",
     "Tumor multiplet": "#eeb3cb",
@@ -223,7 +223,7 @@ _, pvalue = sp.stats.mannwhitneyu(adata.obs.loc[adata.obs["multi_chain"] == "Tru
 ```python
 fig, (ax1, ax2) =plt.subplots(1,2, figsize=(8, 4), gridspec_kw={'width_ratios': [2, 1]})
 sc.pl.umap(adata, color="chain_pairing", groups="Multichain", size=[30 if x == "Multichain" else 3 for x in adata.obs["chain_pairing"]], ax=ax1, legend_loc="none", show=False, frameon=False, title="Multichain UMAP")
-sc.pl.violin(adata, "counts", "multi_chain", ax=ax2, show=False)
+sc.pl.violin(adata, "counts", "multi_chain", ax=ax2, show=False, inner="box", stripplot=False)
 ax2.set_ylabel("detected reads")
 ax2.set_xlabel("")
 ax2.set_xticklabels(["other", "multichain"])
@@ -506,6 +506,7 @@ cells belonging to an expanded clonotype.
 ```python
 fig, ax = plt.subplots(dpi=100)
 ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="cell", show_nonexpanded=True, ax=ax)
+ax.tick_params(labelsize=10)
 fig.savefig("figures/expansion_patients_cell.svg")
 ```
 
@@ -514,6 +515,7 @@ Alternatively, we can show the *fraction of expanded clonotypes*.
 ```python
 fig, ax = plt.subplots(dpi=100)
 ir.pl.clonal_expansion(adata, groupby="patient", summarize_by="clonotype", show_nonexpanded=False, colors=["#FF7F0E", "#2CA02C"], ax=ax)
+ax.tick_params(labelsize=10)
 fig.savefig("figures/expansion_patients_clonotype.svg")
 ```
 
@@ -595,7 +597,7 @@ for clonotype, clonotype_size, source in zip(adata.obs["clonotype"], adata.obs["
     elif clonotype_size >1:
         membership = clonotype_membership[clonotype]
         if "Tumor" in membership and "NAT" in membership:
-            expansion_category.append("Dual expanded")
+            expansion_category.append("Tumor+NAT expanded")
         elif "Tumor"in membership:
             expansion_category.append("Tumor multiplet")
         elif "NAT" in membership:
@@ -636,6 +638,13 @@ ax1.set_title("clonal expansion pattern")
 ax2.set_title("cell-type cluster")
 plt.subplots_adjust(wspace=.1)
 fig.savefig("figures/clonal_expansion_umap.svg")
+```
+
+```python
+fig, ax = plt.subplots(figsize=(4, 4), dpi=300)
+sc.pl.umap(adata, color="cluster_orig", legend_loc="none", show=False, ax=ax, legend_fontoutline=2, frameon=False)
+ax.set_title("")
+fig.savefig("figures/cluster_orig.png")
 ```
 
 ```python
