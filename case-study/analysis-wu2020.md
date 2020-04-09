@@ -550,7 +550,7 @@ fig.savefig('figures/convergent_clonotypes_umap.svg')
 ```
 
 ```python
-ir.pl.group_abundance(adata_sub, groupby="cluster_orig", target_col="convergent_nt", fraction=True, sort="alphabetical")
+ir.pl.group_abundance(adata, groupby="cluster_orig", target_col="convergent_nt", fraction=True, sort="alphabetical", fig_kws={"dpi": 120})
 ```
 
 #### Inspecting only converged clonotypes
@@ -800,7 +800,7 @@ for subset in [["NAT singleton", "NAT multiplet"], ["Tumor singleton", "Tumor mu
 ```python
 for source in ["NAT", "Tumor"]:
     ax = ir.pl.group_abundance(
-        adata[(adata.obs["source"] == source) & (adata.obs["expansion_category"] == "Dual expanded"),:],
+        adata[(adata.obs["source"] == source) & (adata.obs["expansion_category"] == "Tumor+NAT expanded"),:],
         groupby="cluster_orig", 
         target_col="expansion_category", 
         fraction=False,
@@ -833,5 +833,5 @@ fig.savefig("figures/spectratype.svg")
 ```
 
 ```python
-
+ 
 ```
