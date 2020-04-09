@@ -15,7 +15,7 @@ jupyter:
 <!-- #region raw_mimetype="text/restructuredtext" -->
 In this notebook, we re-analize single-cell TCR/RNA-seq data from [Wu et al. (2020)](https://www.nature.com/articles/s41586-020-2056-8)
 generated on the 10x Genomics platform. The original dataset consists of >140k T cells
-from 14 treatment-naive patients across four different types of cancer. Roughly 100k of the 140k cells have T-cell receptors. 
+from 14 treatment-naive patients across four different types of cancer. Roughly 100k of the 140k cells have T-cell receptors.
 <!-- #endregion -->
 
 ## 0. Setup
@@ -40,11 +40,11 @@ from IPython.display import Image, display
 sc.settings._vector_friendly = True
 
 # whether to run the alignment or use a cached version.
-# If `False` and the cached version is not available, will raise an error. 
+# If `False` and the cached version is not available, will raise an error.
 run_alignment = True
 ```
 
-This notebook was run with scirpy commit `a73cf2bf46771eaf6072945d94f7a47fc3d80c52` and the following software versions: 
+This notebook was run with scirpy commit `a73cf2bf46771eaf6072945d94f7a47fc3d80c52` and the following software versions:
 
 ```python
 sc.logging.print_versions()
@@ -78,7 +78,7 @@ colors = {
 ## 1. Preparing the data
 
 <!-- #region raw_mimetype="text/restructuredtext" -->
-The dataset ships with the `scirpy` package. We can conveniently load it from the `dataset` module. 
+The dataset ships with the `scirpy` package. We can conveniently load it from the `dataset` module.
 <!-- #endregion -->
 
 ```python
@@ -89,7 +89,7 @@ adata = ir.datasets.wu2020()
 adata.shape
 ```
 
-We only keep the cells with TCR. ~96k cells remain. 
+We only keep the cells with TCR. ~96k cells remain.
 
 ```python
 adata = adata[adata.obs["has_tcr"] == "True", :]
@@ -112,7 +112,7 @@ adata.obs["counts"] = adata.X.sum(axis=1).A1
 
 Transcriptomics data needs to be filtered and preprocessed as with any other single-cell dataset.
 We recommend following the [scanpy tutorial](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html)
-and the best practice paper by [Luecken et al.](https://www.embopress.org/doi/10.15252/msb.20188746). 
+and the best practice paper by [Luecken et al.](https://www.embopress.org/doi/10.15252/msb.20188746).
 For the _Wu et al. (2020)_ dataset, the authors already provide clusters and UMAP coordinates.
 Instead of performing clustering and cluster annotation ourselves, we will just use
 provided data.
@@ -167,7 +167,7 @@ sc.pl.umap(adata, color=["sample", "patient", "cluster", "CD8A", "CD4", "FOXP3"]
 ### TCR Quality Control
 
 <!-- #region raw_mimetype="text/restructuredtext" -->
-While most of T cell receptors have exactly one pair of α and β chains, up to one third of 
+While most of T cell receptors have exactly one pair of α and β chains, up to one third of
 T cells can have *dual TCRs*, i.e. two pairs of receptors originating from different alleles ([Schuldt et al (2019)](https://doi.org/10.4049/jimmunol.1800904)).
 
 Using the `scirpy.tl.chain_pairing` function, we can add a summary
@@ -187,7 +187,7 @@ ir.tl.chain_pairing(adata)
 ```python
 ax = ir.pl.group_abundance(
     adata, groupby="chain_pairing", target_col="has_tcr", fraction="has_tcr"
-) 
+)
 ax.set_ylabel("fraction of cells")
 ax.set_xlabel("chain pairing")
 ax.set_title("")
@@ -197,7 +197,7 @@ fig.savefig("figures/chain_pairing.svg")
 
 ```python
 sc.pl.umap(adata,
-           color="chain_pairing", 
+           color="chain_pairing",
            groups=["Extra beta", "Extra alpha", "Two full chains"],
            size=[10 if x in ["Extra beta", "Extra alpha", "Two full chains"] else 3 for x in adata.obs["chain_pairing"]])
 ```
@@ -212,8 +212,8 @@ print("Fraction of cells with more than one pair of TCRs: {:.2f}".format(
 
 ### Excluding multichain cells
 Next, we visualize the _Multichain_ cells on the UMAP plot and exclude them from downstream analysis.
-Multichain cells likely represent doublets. This is corroborated by the fact that they tend to 
-have a very high number of detected transcripts. 
+Multichain cells likely represent doublets. This is corroborated by the fact that they tend to
+have a very high number of detected transcripts.
 
 ```python
 _, pvalue = sp.stats.mannwhitneyu(adata.obs.loc[adata.obs["multi_chain"] == "True", "counts"].values, adata.obs.loc[adata.obs["multi_chain"] == "False", "counts"].values)
@@ -246,21 +246,21 @@ adata.shape
 
 ## 2. Define clonotypes
 
-Defining clonotypes in `scirpy` is a two-step procedure: 
+Defining clonotypes in `scirpy` is a two-step procedure:
 
  1. Computing a neighborhood graph based on CDR3 sequences
  2. Finding connected submodules in the neighborhood graph and annotating them as clonotypes
- 
+
 `scirpy` provides several metrics for creating the neighborhood graph. For instance, it is possible to choose between
-using nucleotide or amino acid CDR3 sequences, or using a sequence similarity metric based on multiple 
-sequence alignments instead of requiring sequences to be identical. 
+using nucleotide or amino acid CDR3 sequences, or using a sequence similarity metric based on multiple
+sequence alignments instead of requiring sequences to be identical.
 
 ```python
 sc.settings.verbosity = 4
 ```
 
 ### identical nucleotide sequences
-The authors of the dataset define the clonotypes on the nucleotide sequences and require all sequences of both receptor arms (and multiple chains in case of dual TCRs) to match. 
+The authors of the dataset define the clonotypes on the nucleotide sequences and require all sequences of both receptor arms (and multiple chains in case of dual TCRs) to match.
 
 ```python
 %%time
@@ -273,7 +273,7 @@ ir.tl.define_clonotypes(adata, neighbors_key="tcr_neighbors_nt", key_added="clon
 ```
 
 ### identical amino acid sequences
-Commonly, clonotypes are defined based on their amino acid sequence instead, because they recognize the same epitope. This is the `scirpy` default. 
+Commonly, clonotypes are defined based on their amino acid sequence instead, because they recognize the same epitope. This is the `scirpy` default.
 
 ```python
 %%time
@@ -287,9 +287,9 @@ ir.tl.define_clonotypes(adata, neighbors_key="tcr_neighbors", key_added="clonoty
 
 ### similar amino acid sequences
 
-With `scirpy`, it is possible to to one step further and summarize cells into the same clonotype that likely recognize the 
+With `scirpy`, it is possible to to one step further and summarize cells into the same clonotype that likely recognize the
 same epitope. This can be done by leveraging levenshtein or alignment distances. Here, we compute the alignment distance
-with a cutoff of 15, which is equivalent of three `A`s mutating into `R`. 
+with a cutoff of 15, which is equivalent of three `A`s mutating into `R`.
 
 ```python
 # adata.write_h5ad("./adata_in.h5ad")
@@ -313,11 +313,11 @@ ir.tl.define_clonotypes(adata, neighbors_key="tcr_neighbors_al15", key_added="cl
 <!-- #region raw_mimetype="text/restructuredtext" -->
 ### Visualizing clonotype networks
 To visualize the network we first call `scirpy.tl.clonotype_network` to compute the layout.
-We can then visualize it using `scirpy.pl.clonotype_network`. 
+We can then visualize it using `scirpy.pl.clonotype_network`.
 
-The following plot visualizes all clonotypes with at least 50 cells. Each dot represents a cell, 
-and each blob a clonotype. In the left panel each clonotype is labelled, in the right panel 
-the clonotypes are colored by patient. 
+The following plot visualizes all clonotypes with at least 50 cells. Each dot represents a cell,
+and each blob a clonotype. In the left panel each clonotype is labelled, in the right panel
+the clonotypes are colored by patient.
 <!-- #endregion -->
 
 ```python
@@ -328,23 +328,23 @@ ir.tl.clonotype_network(adata, min_size=50, layout="components")
 ```python
 ir.pl.clonotype_network(adata,
                         color=["clonotype", "patient"],
-                        edges=False, size=50, ncols=2, 
+                        edges=False, size=50, ncols=2,
                         legend_fontoutline=2,
                         legend_loc=["on data", "right margin"])
 ```
 
 ## 3. Clonotype consistency
 
-Before we dive into the analysis of clonal expansion, we compare the different approaches of clonotype definition. 
+Before we dive into the analysis of clonal expansion, we compare the different approaches of clonotype definition.
 
 ### 3.1 nucleotide based (scirpy vs. Wu et al.)
-In this section, we compare the clonotypes assigned by `scirpy` assigned to the clonotypes assigned by the authors of the study. 
-The original clonotypes are stored in the `clonotype_orig` column of `obs`. 
+In this section, we compare the clonotypes assigned by `scirpy` assigned to the clonotypes assigned by the authors of the study.
+The original clonotypes are stored in the `clonotype_orig` column of `obs`.
 
-According to the paper, the clonotypes are defined on nucleotide sequences and require sequence identity of all available chains. 
-This should be equivalent of running `scirpy.tcr_neighbors` with `dual_tcr="all"` and `receptor_arms="all"`. 
+According to the paper, the clonotypes are defined on nucleotide sequences and require sequence identity of all available chains.
+This should be equivalent of running `scirpy.tcr_neighbors` with `dual_tcr="all"` and `receptor_arms="all"`.
 
-To assess if the clonotype definitions are equivalent, we first check if there are *clonotypes in `clonotype_orig` that contain multiple clonotypes according to scirpy's definition*. 
+To assess if the clonotype definitions are equivalent, we first check if there are *clonotypes in `clonotype_orig` that contain multiple clonotypes according to scirpy's definition*.
 
 ```python
 # the clonotypes in clonotype_orig that contain multiple clonotype_nt
@@ -352,7 +352,7 @@ nt_in_orig = adata.obs.groupby(["clonotype_orig", "clonotype_nt"]).size().reset_
 nt_in_orig[nt_in_orig[0] > 1]
 ```
 
-There are none! 
+There are none!
 
 Next, we check if there are *clonotypes in `clonotype_nt` that contain multiple clonotypes according to the authors' definition.*
 
@@ -363,9 +363,9 @@ with pd.option_context('display.max_rows', 8):
     display(orig_in_nt[orig_in_nt[0] > 1])
 ```
 
-There are a few! 
+There are a few!
 
-Let's investigate that further: 
+Let's investigate that further:
 
 ```python
 with pd.option_context('display.max_rows', 10):
@@ -375,11 +375,11 @@ with pd.option_context('display.max_rows', 10):
     ].sort_values(["clonotype_nt", "clonotype_orig"]))
 ```
 
-All cells of the same `clonotype_nt` have the same nucleotide sequences (apart from swapping between `TRA_1` and `TRA_2` or `TRB_1` and `TRB_2`, respectively). Our method appears to work as expected. 
-The inconsistencies seem to arise from the fact that the clonotypes have the same sequences, but originate from different patients. Apparently, the 
-authors did not allow clonotypes from different patients (which makes sense when approaching clonotypes from a genomic point of view, not from an epitope recognition point of view). 
+All cells of the same `clonotype_nt` have the same nucleotide sequences (apart from swapping between `TRA_1` and `TRA_2` or `TRB_1` and `TRB_2`, respectively). Our method appears to work as expected.
+The inconsistencies seem to arise from the fact that the clonotypes have the same sequences, but originate from different patients. Apparently, the
+authors did not allow clonotypes from different patients (which makes sense when approaching clonotypes from a genomic point of view, not from an epitope recognition point of view).
 
-When checking the number of clonotypes_orig per clonotype_nt and patient, we eradicate the differences: 
+When checking the number of clonotypes_orig per clonotype_nt and patient, we eradicate the differences:
 
 ```python
 # the clonotypes in clonotype_nt that contain multiple clonotype_orig
@@ -400,19 +400,19 @@ print(f"""Number of clonotypes according to scirpy, within patient: {adata.obs.g
 ### 3.2 amino-acid vs. nucleotide-based
 
 
-For a few clonotypes, we observe differences comparing the amino-accid vs. nucleotide-based approach for defining clonotypes. 
-Clonotypes with the same amino acid sequence but different nucleotide sequences recognize the same antigen - 
-but derive from different antedescent cells. This can be an example of convergent evolution. 
+For a few clonotypes, we observe differences comparing the amino-accid vs. nucleotide-based approach for defining clonotypes.
+Clonotypes with the same amino acid sequence but different nucleotide sequences recognize the same antigen -
+but derive from different antedescent cells. This can be an example of convergent evolution.
 
 ```python
 ir.pl.clonotype_network(adata,
                         color=["clonotype", "clonotype_nt"],
-                        edges=False, size=50, ncols=2, 
+                        edges=False, size=50, ncols=2,
                         legend_fontoutline=2,
                         legend_loc=["on data", "none"])
 ```
 
-Let's find the cells that belong to clonotypes that have different nucleotide sequences but the same amino acid sequences: 
+Let's find the cells that belong to clonotypes that have different nucleotide sequences but the same amino acid sequences:
 
 ```python
 nt_in_aa = adata.obs.groupby(["clonotype_nt", "clonotype"]).size().reset_index().groupby(["clonotype"]).size().reset_index()
@@ -427,21 +427,21 @@ adata.obs["is_convergent"] = ["convergent" if x else "-" for x in adata.obs["clo
 sc.pl.umap(adata, color="is_convergent", groups=["convergent"], size=[10 if x == "convergent" else 3 for x in adata.obs["is_convergent"]])
 ```
 
-The phonomenon appears to primarily occur in CD8+ effector and tissue resident T cells: 
+The phonomenon appears to primarily occur in CD8+ effector and tissue resident T cells:
 
 ```python
 ir.pl.group_abundance(adata, groupby="cluster", target_col="is_convergent", fraction=True)
 ```
 
 ### 3.3 amino-acid identity vs. alignment distance
-When computing the alignment distance, we allowed a distance of `15`, based on the BLOSUM62 matrix. 
-This is eqivalent of three `A`s mutating into `R`. 
+When computing the alignment distance, we allowed a distance of `15`, based on the BLOSUM62 matrix.
+This is eqivalent of three `A`s mutating into `R`.
 
-The alignment distance allows us to identify similar CDR3 sequences, that likely recognize the same epitope. 
+The alignment distance allows us to identify similar CDR3 sequences, that likely recognize the same epitope.
 
-For the following visualization, we exclude cells with *Orphan* chains. Having only one chain that 
-needs to match there tend to be a lot of similar cells within a distance of `15` resulting in 
-large, uninformative networks for those cells. 
+For the following visualization, we exclude cells with *Orphan* chains. Having only one chain that
+needs to match there tend to be a lot of similar cells within a distance of `15` resulting in
+large, uninformative networks for those cells.
 
 ```python
 %%time
@@ -453,7 +453,7 @@ adata_sub = adata[~adata.obs["chain_pairing"].str.startswith("Orphan"), :]
 ir.tl.clonotype_network(adata_sub, min_size=50, layout="components", neighbors_key="tcr_neighbors_al15", key_clonotype_size="clonotype_alignment_size")
 ```
 
-We'll have a closer look at the following clonotypes, as they seem interesting: 
+We'll have a closer look at the following clonotypes, as they seem interesting:
 
 ```python
 selected_clonotypes = ["10411", "5304", "1626", "632"]
@@ -475,7 +475,7 @@ ax.set_title("clonotypes")
 fig.savefig("figures/clonotype_network.svg")
 ```
 
-The patient distribution of the four clonotypes: 
+The patient distribution of the four clonotypes:
 
 ```python
 ax = ir.pl.group_abundance(adata_sub[adata_sub.obs["clonotype_alignment"].isin(selected_clonotypes), :], groupby="clonotype_alignment", sort=selected_clonotypes, target_col="patient")
@@ -504,11 +504,11 @@ for ct in selected_clonotypes:
         weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == ct, chain].values, title=f"clonotype {ct}: {chain_label}-chain", format="png")
 ```
 
-Clonotype `632` could is shared among multiple patients and could be specific for a common, viral antigen. 
+Clonotype `632` could is shared among multiple patients and could be specific for a common, viral antigen.
 
 In case of the clonotype `1261` epitope (which we didin't highlight above) we find evidence in *vdjdb* that it could be specific for an Human Cytomegalievirus (CMV) antigen:
- * In [vdjdb](https://vdjdb.cdr3.net/search), we find a CMV-specific alpha-chain searching with the `CAV[STR][LG]QAGTALIF` pattern. 
- * Searching for the beta-chain pattern does not yield a direct result. However, allowing up to two substitutions, we find a CMV-specific chain as well. 
+ * In [vdjdb](https://vdjdb.cdr3.net/search), we find a CMV-specific alpha-chain searching with the `CAV[STR][LG]QAGTALIF` pattern.
+ * Searching for the beta-chain pattern does not yield a direct result. However, allowing up to two substitutions, we find a CMV-specific chain as well.
 
 
 #### convergent clonotypes
@@ -574,10 +574,10 @@ In this section, we assess the clonal expansion
  - across patients
  - across clusters
  - across tissue sources
- 
+
 With the `pl.clonal_expansion` function, we can easily visualize the clonal expansion
 by different variables. Per default, the plot shows the fraction of
-cells belonging to an expanded clonotype. 
+cells belonging to an expanded clonotype.
 
 ### clonal expansion across patients
 
@@ -588,7 +588,7 @@ ax.tick_params(labelsize=10)
 fig.savefig("figures/expansion_patients_cell.svg")
 ```
 
-Alternatively, we can show the *fraction of expanded clonotypes*. 
+Alternatively, we can show the *fraction of expanded clonotypes*.
 
 ```python
 fig, ax = plt.subplots(dpi=100)
@@ -598,7 +598,7 @@ fig.savefig("figures/expansion_patients_clonotype.svg")
 ```
 
 In the paper, the authors state that depending on the patient, between 9 and 18% of clonotypes
-are expanded. Our results are highly consistent with these results: 
+are expanded. Our results are highly consistent with these results:
 
 ```python
 fraction_expanded = ir.tl.summarize_clonal_expansion(adata, groupby="patient", summarize_by="clonotype", normalize=True).drop("1", axis="columns").sum(axis=1)
@@ -609,30 +609,30 @@ print(f"Between {min(fraction_expanded):.1%} and {max(fraction_expanded):.1%} of
 ```
 
 ### clonal expansion across cell-type clusters
-We observe that clonal expansion is highest among the CD8+ T-cell clusters, in particular effector and tissue-resident T cells. 
+We observe that clonal expansion is highest among the CD8+ T-cell clusters, in particular effector and tissue-resident T cells.
 
 ```python
 ir.pl.clonal_expansion(adata, groupby="cluster_orig", summarize_by="cell", show_nonexpanded=True, fig_kws={"dpi": 120})
 ```
 
 ### clonal expansion across tissue sources
-The fraction of expanded cell is roughly equivalent among tumor and ajacent normal tissue, but lower in 
-blood. 
+The fraction of expanded cell is roughly equivalent among tumor and ajacent normal tissue, but lower in
+blood.
 
 ```python
 ir.pl.clonal_expansion(adata, groupby="source", summarize_by="cell", show_nonexpanded=True)
 ```
 
 ## 5. Dual- and blood expanded clonotypes
-Finally, we will divide the clonotypes into different categories, based on their expansion in blood, tissue and tumor samples. 
+Finally, we will divide the clonotypes into different categories, based on their expansion in blood, tissue and tumor samples.
 
 In particular, we will
  * identify *dual-expanded* clonotypes, which are expanded in both adjacent tissue and tumor samples
  * identify blood-expanded clonotypes
 
-and compare their abundance across cell-types and patients. 
+and compare their abundance across cell-types and patients.
 
-For an illustration, please refer to Fig. 1b of the *Wu et al. (2020)* paper. 
+For an illustration, please refer to Fig. 1b of the *Wu et al. (2020)* paper.
 
 ```python
 clonotype_size_by_source = adata.obs.groupby(["patient", "source", "clonotype"], observed=True).size().reset_index(name="clonotype_count_by_source")
@@ -683,8 +683,8 @@ for clonotype, clonotype_size, source in zip(adata.obs["clonotype"], adata.obs["
         elif "Blood" in membership:
             # these are *only* expanded in blood
             expansion_category.append("Blood multiplet")
-            
-assert len(expansion_category) == adata.n_obs       
+
+assert len(expansion_category) == adata.n_obs
 ```
 
 ```python
@@ -702,7 +702,7 @@ adata._sanitize()
 adata.uns["expansion_category_colors"] = [colors[x] for x in adata.obs["expansion_category"].cat.categories]
 ```
 
-Mostly CD8+ effector and tissue-resident T cells are blood-expanded and dual-expanded: 
+Mostly CD8+ effector and tissue-resident T cells are blood-expanded and dual-expanded:
 
 ```python
 sc.pl.umap(adata, color="blood_expanded", groups=["expanded", "not expanded"], size=[15 if x in ["expanded", "not expanded"] else 3 for x in adata.obs["blood_expanded"]])
@@ -757,7 +757,7 @@ ir.pl.group_abundance(
 )
 ```
 
-The fraction of blood-expanded, blood non-expanded and blood-independent cells 
+The fraction of blood-expanded, blood non-expanded and blood-independent cells
 for the four patients with blood samples
 
 ```python
@@ -769,40 +769,40 @@ ir.pl.group_abundance(
 )
 ```
 
-Tissue infiltration patterns. The bar plots show the distribution of cells by tissue expansion patterns from 
-blood-indpendned, non-expanded and expanded clones. 
+Tissue infiltration patterns. The bar plots show the distribution of cells by tissue expansion patterns from
+blood-indpendned, non-expanded and expanded clones.
 
 ```python
 for patient in ["Lung6", "Renal1", "Renal2", "Renal3"]:
     ax = ir.pl.group_abundance(
         adata[adata.obs["patient"] == patient,:],
-        groupby="blood_expanded", 
-        target_col="expansion_category", 
+        groupby="blood_expanded",
+        target_col="expansion_category",
         fraction=True)
     ax.set_title(patient)
 ```
 
-Tissue expansion patterns of T cell by cluster. 
+Tissue expansion patterns of T cell by cluster.
 
 ```python
 for subset in [["NAT singleton", "NAT multiplet"], ["Tumor singleton", "Tumor multiplet"]]:
     ax = ir.pl.group_abundance(
         adata[adata.obs["expansion_category"].isin(subset),:],
-        groupby="cluster_orig", 
-        target_col="expansion_category", 
+        groupby="cluster_orig",
+        target_col="expansion_category",
         fraction=False,
         fig_kws={"dpi": 120},
         sort="alphabetical"
     )
-    ax.set_title(subset[0].split()[0]) 
+    ax.set_title(subset[0].split()[0])
 ```
 
 ```python
 for source in ["NAT", "Tumor"]:
     ax = ir.pl.group_abundance(
         adata[(adata.obs["source"] == source) & (adata.obs["expansion_category"] == "Tumor+NAT expanded"),:],
-        groupby="cluster_orig", 
-        target_col="expansion_category", 
+        groupby="cluster_orig",
+        target_col="expansion_category",
         fraction=False,
         fig_kws={"dpi": 120},
         sort="alphabetical"
@@ -833,5 +833,5 @@ fig.savefig("figures/spectratype.svg")
 ```
 
 ```python
- 
+
 ```
