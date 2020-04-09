@@ -38,27 +38,16 @@ from weblogo import png_formatter, svg_formatter, eps_formatter
 from weblogo import LogoData, LogoOptions, LogoFormat
 from IPython.display import Image, display
 sc.settings._vector_friendly = True
+
+# whether to run the alignment or use a cached version.
+# If `False` and the cached version is not available, will raise an error. 
+run_alignment = True
 ```
+
+This notebook was run with scirpy commit `a73cf2bf46771eaf6072945d94f7a47fc3d80c52` and the following software versions: 
 
 ```python
 sc.logging.print_versions()
-```
-
-```python
-def fast_subset(adata, mask):
-    """Subsetting adata with columns with many categories takes forever. 
-    The reason is that `remove_unused_categories` from pandas is super slow. 
-    Need to report that to the pandas devs at some point or work around it
-    in AnnData. 
-    
-    In the meanwhile, subset adata by copying it, subsetting the `obs` dataframe
-    individually and re-adding it to the copy.  
-    """
-    adata2 = adata.copy()
-    adata2.obs = pd.DataFrame(adata.obs.index)
-    adata2 = adata2[mask, :].copy()
-    adata2.obs = adata.obs.loc[mask, :]
-    return adata2
 ```
 
 ```python
@@ -179,7 +168,7 @@ sc.pl.umap(adata, color=["sample", "patient", "cluster", "CD8A", "CD4", "FOXP3"]
 
 <!-- #region raw_mimetype="text/restructuredtext" -->
 While most of T cell receptors have exactly one pair of α and β chains, up to one third of 
-T cells can have *dual TCRs*, i.e. two pairs of receptors originating from different alleles ([Schuldt et al (2019)](https://doi.org/10.4049/jimmunol.1800904).
+T cells can have *dual TCRs*, i.e. two pairs of receptors originating from different alleles ([Schuldt et al (2019)](https://doi.org/10.4049/jimmunol.1800904)).
 
 Using the `scirpy.tl.chain_pairing` function, we can add a summary
 about the T cell receptor compositions to `adata.obs`.
@@ -206,14 +195,14 @@ fig = ax.get_figure()
 fig.savefig("figures/chain_pairing.svg")
 ```
 
-Indeed, in this dataset, ~7% of cells have more than a one pair of productive T-cell receptors:
-
 ```python
 sc.pl.umap(adata,
            color="chain_pairing", 
            groups=["Extra beta", "Extra alpha", "Two full chains"],
            size=[10 if x in ["Extra beta", "Extra alpha", "Two full chains"] else 3 for x in adata.obs["chain_pairing"]])
 ```
+
+Indeed, in this dataset, ~7% of cells have more than a one pair of productive T-cell receptors:
 
 ```python
 print("Fraction of cells with more than one pair of TCRs: {:.2f}".format(
@@ -222,7 +211,9 @@ print("Fraction of cells with more than one pair of TCRs: {:.2f}".format(
 ```
 
 ### Excluding multichain cells
-Next, we visualize the _Multichain_ cells on the UMAP plot and exclude them from downstream analysis:
+Next, we visualize the _Multichain_ cells on the UMAP plot and exclude them from downstream analysis.
+Multichain cells likely represent doublets. This is corroborated by the fact that they tend to 
+have a very high number of detected transcripts. 
 
 ```python
 _, pvalue = sp.stats.mannwhitneyu(adata.obs.loc[adata.obs["multi_chain"] == "True", "counts"].values, adata.obs.loc[adata.obs["multi_chain"] == "False", "counts"].values)
@@ -301,16 +292,17 @@ same epitope. This can be done by leveraging levenshtein or alignment distances.
 with a cutoff of 15, which is equivalent of three `A`s mutating into `R`. 
 
 ```python
-adata.write_h5ad("./adata_in.h5ad")
+# adata.write_h5ad("./adata_in.h5ad")
 ```
 
 ```python
-# %%time
-# ir.pp.tcr_neighbors(adata, receptor_arms="all", dual_tcr="all", cutoff=15, key_added="tcr_neighbors_al15")
-```
-
-```python
-adata = sc.read_h5ad("./adata_alignment.h5ad")
+%%time
+if run_alignment:
+    ir.pp.tcr_neighbors(adata, receptor_arms="all", dual_tcr="all", cutoff=15, key_added="tcr_neighbors_al15")
+    adata.write_h5ad("./adata_alignment.h5ad")
+else:
+    # read cached version
+    adata = sc.read_h5ad("./adata_alignment.h5ad")
 ```
 
 ```python
@@ -420,6 +412,8 @@ ir.pl.clonotype_network(adata,
                         legend_loc=["on data", "none"])
 ```
 
+Let's find the cells that belong to clonotypes that have different nucleotide sequences but the same amino acid sequences: 
+
 ```python
 nt_in_aa = adata.obs.groupby(["clonotype_nt", "clonotype"]).size().reset_index().groupby(["clonotype"]).size().reset_index()
 convergent_clonotypes = nt_in_aa.loc[nt_in_aa[0] > 1, "clonotype"]
@@ -459,21 +453,18 @@ adata_sub = adata[~adata.obs["chain_pairing"].str.startswith("Orphan"), :]
 ir.tl.clonotype_network(adata_sub, min_size=50, layout="components", neighbors_key="tcr_neighbors_al15", key_clonotype_size="clonotype_alignment_size")
 ```
 
-Let's have a look at two clonotypes that seem particularly interesting: `1626` and `1261`, highlighted in the following plot.
-
-* clonotype `1626` is likely another example of convergent evolution. It consists of three highly similar sequencesand occurs in the same patient.
-* clonotype `1261` is distributed across two patients. Potentially they target an epitope of a common pathogen rather than a patient-specific cancer epitope. 
+We'll have a closer look at the following clonotypes, as they seem interesting: 
 
 ```python
-ir.pl.clonotype_network(adata_sub, color=["clonotype_alignment"], groups=["1626", "1261"], edges=False, size=50, ncols=2, legend_loc="on data", legend_fontoutline=3)
+selected_clonotypes = ["10411", "5304", "1626", "632"]
+```
+
+```python
+ir.pl.clonotype_network(adata_sub, color=["clonotype_alignment"], groups=selected_clonotypes, edges=False, size=50, ncols=2, legend_loc="on data", legend_fontoutline=3)
 ```
 
 ```python
 ir.pl.clonotype_network(adata_sub, color=["clonotype", "patient"], edges=False, size=50, ncols=2, legend_loc=["none", "right margin"], legend_fontoutline=2)
-```
-
-```python
-selected_clonotypes = ["10411", "5304", "1626", "632"]
 ```
 
 ```python
@@ -483,6 +474,8 @@ ir.pl.clonotype_network(adata_sub, color="clonotype", edges=False, size=50, lege
 ax.set_title("clonotypes")
 fig.savefig("figures/clonotype_network.svg")
 ```
+
+The patient distribution of the four clonotypes: 
 
 ```python
 ax = ir.pl.group_abundance(adata_sub[adata_sub.obs["clonotype_alignment"].isin(selected_clonotypes), :], groupby="clonotype_alignment", sort=selected_clonotypes, target_col="patient")
@@ -511,13 +504,20 @@ for ct in selected_clonotypes:
         weblogo(adata.obs.loc[adata.obs["clonotype_alignment"] == ct, chain].values, title=f"clonotype {ct}: {chain_label}-chain", format="png")
 ```
 
-The clonotype `1261` epitope could be specific for an Human Cytomegalievirus (CMV) antigen. 
+Clonotype `632` could is shared among multiple patients and could be specific for a common, viral antigen. 
+
+In case of the clonotype `1261` epitope (which we didin't highlight above) we find evidence in *vdjdb* that it could be specific for an Human Cytomegalievirus (CMV) antigen:
  * In [vdjdb](https://vdjdb.cdr3.net/search), we find a CMV-specific alpha-chain searching with the `CAV[STR][LG]QAGTALIF` pattern. 
  * Searching for the beta-chain pattern does not yield a direct result. However, allowing up to two substitutions, we find a CMV-specific chain as well. 
 
 
 #### convergent clonotypes
 We define a clonotype as being convergent, if there are different versions of nucleotide sequences for similar clonotypes, within the same patient.
+
+We define convergence
+ * on the level of amino-acid identity vs nucleotide identity
+ * on the level of amino-acid similarity vs nucleotide identity
+
 
 ```python
 convergent_aa = adata.obs.groupby(["clonotype", "clonotype_alignment", "patient"]).size().reset_index().groupby(["clonotype_alignment", "patient"]).size().reset_index()
@@ -709,6 +709,11 @@ sc.pl.umap(adata, color="blood_expanded", groups=["expanded", "not expanded"], s
 ```
 
 ```python
+ir.pl.embedding(adata, basis="umap", color=["expansion_category", "cluster_orig"], legend_loc=["right margin", "on data"], show=True, legend_fontoutline=2, frameon=False, wspace=.5, panel_size=(6, 4))
+```
+
+```python
+%%capture
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(8.5, 4), dpi=300)
 sc.pl.umap(adata, color="expansion_category", legend_loc="none", show=False, ax=ax1, frameon=False)
 sc.pl.umap(adata, color="cluster_orig", legend_loc="on data", show=False, ax=ax2, legend_fontoutline=2, frameon=False)
@@ -719,11 +724,14 @@ fig.savefig("figures/clonal_expansion_umap.svg")
 ```
 
 ```python
+%%capture
 fig, ax = plt.subplots(figsize=(4, 4), dpi=300)
 sc.pl.umap(adata, color="cluster_orig", legend_loc="none", show=False, ax=ax, legend_fontoutline=2, frameon=False)
 ax.set_title("")
 fig.savefig("figures/cluster_orig.png")
 ```
+
+Categories by cell type (fractions and count):
 
 ```python
 ir.pl.group_abundance(
@@ -741,11 +749,7 @@ ax.set_xlabel("cluster")
 fig.savefig("figures/expansion_category_cluster.svg")
 ```
 
-```python
-ir.pl.group_abundance(
-    adata, groupby="expansion_category", target_col="cluster_orig", fraction=True
-)
-```
+Categories by tumor type:
 
 ```python
 ir.pl.group_abundance(
@@ -783,11 +787,12 @@ Tissue expansion patterns of T cell by cluster.
 ```python
 for subset in [["NAT singleton", "NAT multiplet"], ["Tumor singleton", "Tumor multiplet"]]:
     ax = ir.pl.group_abundance(
-    adata[adata.obs["expansion_category"].isin(subset),:],
-    groupby="cluster_orig", 
-    target_col="expansion_category", 
-    fraction=False,
-    fig_kws={"dpi": 120}
+        adata[adata.obs["expansion_category"].isin(subset),:],
+        groupby="cluster_orig", 
+        target_col="expansion_category", 
+        fraction=False,
+        fig_kws={"dpi": 120},
+        sort="alphabetical"
     )
     ax.set_title(subset[0].split()[0]) 
 ```
@@ -795,11 +800,12 @@ for subset in [["NAT singleton", "NAT multiplet"], ["Tumor singleton", "Tumor mu
 ```python
 for source in ["NAT", "Tumor"]:
     ax = ir.pl.group_abundance(
-    adata[(adata.obs["source"] == source) & (adata.obs["expansion_category"] == "Dual expanded"),:],
-    groupby="cluster_orig", 
-    target_col="expansion_category", 
-    fraction=False,
-    fig_kws={"dpi": 120}
+        adata[(adata.obs["source"] == source) & (adata.obs["expansion_category"] == "Dual expanded"),:],
+        groupby="cluster_orig", 
+        target_col="expansion_category", 
+        fraction=False,
+        fig_kws={"dpi": 120},
+        sort="alphabetical"
     )
     ax.set_title(source)
 ```
