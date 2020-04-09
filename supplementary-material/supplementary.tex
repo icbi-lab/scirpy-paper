@@ -10,7 +10,9 @@
 \usepackage{textgreek}
 \usepackage{amssymb}
 \usepackage{pifont}
+\usepackage{enumitem}
 \newcommand{\xmark}{\ding{55}}
+\setlength{\parskip}{1.5mm}
 
 \usepackage{footnote}
 \makesavenoteenv{tabular}
@@ -39,13 +41,13 @@
   \centering
   \includegraphics[width=7in]{../figures/multichains.pdf}
   \caption{
-    \textbf{Scirpy flags cells with more than two pairs of \textalpha\ and \textbeta\ TCR-chains as “multichain” cells.} 
-    \textbf{(a)} Quality control of chain pair recovery showing the fraction of cells 
-    with unconventional receptor configuration. Orphan alpha and beta designates cells 
+    \textbf{Scirpy flags cells with more than two pairs of \textalpha- and \textbeta-TCR-chains as “multichain” cells.} 
+    \textbf{(a)} The chart delineates the fraction of
+    cells with a certain receptor configuration. Orphan alpha and beta designates cells 
     where only a single \textalpha- or \textbeta-chain sequence could be recovered, 
-    respectively. Extra in this context means that in addition to a valid pair of
-    receptor chains, an additional alpha or beta sequence was found. 
-    \textbf{(b)} UMAP plot of ~96,000 cells from Wu et al. \cite{Wu2020-vp} with at
+    respectively; extra refers to cells having an extra chain in addition to a valid pair of
+    \textalpha- or \textbeta-receptor chains. 
+    \textbf{(b)} UMAP plot of ~96,000 cells from \textcite{Wu2020-vp} with at
     least one detected CDR3 sequence with multichain-cells (n=474) highlighted in green.
     \textbf{(c)} Comparison of detected reads per cell in multichain-cells and other cells.
     Multichain cells comprised significantly more reads per cell
@@ -60,10 +62,10 @@
   \includegraphics[width=7in]{../figures/expansion_per_cluster.pdf}
   \caption{
     \textbf{Differential tissue expansion patterns by T-cell clusters.} 
-    \textbf{(a)} UMAP plot of ~96,000 cells from \cite{Wu2020-vp} with at least one 
+    \textbf{(a)} UMAP plot of ~96,000 cells from \textcite{Wu2020-vp} with at least one 
     detected CDR3 region, colored according to the cell-type clusters described in the 
-    original study. (b, c) Distribution of tissue expansion patterns by clustered 
-    T-cell subpopulations visualized as \textbf{(b)} UMAP plot and \textbf{(c)} bar
+    original study. \textbf{(b, c)} Distribution of tissue expansion patterns by clustered 
+    T-cell subpopulations visualized as (b) UMAP plot and (c) bar
     chart. While CD8+ effector, effector memory, and tissue-resident T-cells tended 
     to be expanded in both tumor and normal adjacent tissue (NAT), CD4+ T-cell clusters
     primarily comprised singleton clonotypes.}
@@ -80,14 +82,14 @@
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=7in]{../figures/clonotype_convergence.pdf}
-  \caption{\textbf{The comparison of clonotypes based on either sequence similarity or identity yields evidence of convergent evolution.} \textbf{(a)} Clonotypes with more than 50 cells visualized as a network plot. Each cluster represents a sub-network corresponding to a clonotype based on amino-acid sequence similarity; each dot represents an individual cell and is colored according to the clonotype assigned based on nucleotide-sequence identity. Four clonotypes with heterogeneous nucleotide sequences are highlighted. \textbf{(b)} Sequence logos of the primary TCR-α and TCR-β chains of the clonotypes highlighted in (a). \textbf{(c)} Patient composition of the four clonotypes highlighted in (a). Clonotypes number 10411, 5304, and 1626 comprised cells from a single patient only and were likely the result of convergent clonotype evolution. Clonotype 632 comprised cells from different patients and potentially represents an epitope targeting a common disease epitope (e.g. a viral epitope). \textbf{(d)} Cells from convergent clonotypes highlighted in the UMAP plot from \cite{Wu2020-vp}. We defined convergent clonotypes as subnetworks including different nucleotide sequences from the same patient.}
+  \caption{\textbf{The comparison of clonotypes based on either sequence similarity or identity yields evidence of convergent evolution.} \textbf{(a)} Clonotypes with more than 50 cells visualized as a network plot. Each cluster represents a sub-network corresponding to a clonotype based on amino-acid sequence similarity; each dot represents an individual cell and is colored according to the clonotype assigned based on nucleotide-sequence identity. Four clonotypes with heterogeneous nucleotide sequences are highlighted. \textbf{(b)} Sequence logos of the primary TCR-α and TCR-β chains of the clonotypes highlighted in (a). \textbf{(c)} Patient composition of the four clonotypes highlighted in (a). Clonotypes number 10411, 5304, and 1626 comprised cells from a single patient only and were likely the result of convergent clonotype evolution. Clonotype 632 comprised cells from different patients and potentially represents an epitope targeting a common disease epitope (e.g. a viral epitope). \textbf{(d)} Cells from convergent clonotypes highlighted in the UMAP plot from \textcite{Wu2020-vp}. We defined convergent clonotypes as subnetworks including different nucleotide sequences from the same patient.}
 \end{figure}
 
 \newpage
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=7in]{../figures/gene_usage.pdf}
-  \caption{\textbf{VDJ gene usage of 96,000 T cells from Wu et al. \cite{Wu2020-vp}} \textbf{(a)} VDJ gene usage of primary TCR-\textalpha\ and \textbeta\ chains visualized as a Sankey plot. Each bar refers to a specific VDJ segment, and each bar section to a specific V, D, or J gene. \textbf{(b)} Spectratype plot of the primary TCR-\textbeta\ chain, colored by J gene usage. The bars show the distribution of TCR-\textbeta\ CDR3 sequence length.}
+  \caption{\textbf{VDJ gene usage of 96,000 T cells from \textcite{Wu2020-vp}} \textbf{(a)} VDJ gene usage of primary TCR-\textalpha\ and \textbeta\ chains visualized as a Sankey plot. Each bar refers to a specific VDJ segment, and each bar section to a specific V, D, or J gene. \textbf{(b)} Spectratype plot of the primary TCR-\textbeta\ chain, colored by J gene usage. The bars show the distribution of TCR-\textbeta\ CDR3 sequence length.}
 \end{figure}
 
 \newpage
@@ -254,10 +256,12 @@ Contrary to what would be expected based on the previously described mechanism o
 
 Scirpy allows investigating the composition and phenotypes of both single- and dual-TCR T cells by leveraging a T cell model similar to the one proposed in \cite{Stubbington2016-kh}, where T cells are allowed to have a primary and a secondary pair of α and β chains. For each cell, the primary pair consists of the α- and β-chain with the highest read count. Likewise, the secondary pair is the pair of α/β-chains with the second highest expression level. Based on the assumption that each cell has only two copies of the underlying chromosome set, if more than two variants of a chain are recovered for the same cell, the excess TCR chains are ignored by Scirpy and the corresponding cells flagged as “multichain” (Supplementary Figure 1). This filtering strategy leaves the choice of discarding or including multichain cells in downstream analyses.\par
 
-Scirpy implements a network-based clonotype definition that enables clustering cells into clonotypes based on the following options:\par
-\hspace*{2\parindent}(a) identical CDR3 nucleotide sequences;\par
-\hspace*{2\parindent}(b) identical CDR3 amino acid sequences;\par
-\hspace*{2\parindent}(c) similar CDR3 amino acid sequences based on pairwise sequence alignment. \par
+Scirpy implements a network-based clonotype definition that enables clustering cells into clonotypes based on the following options:
+\begin{enumerate}[label=(\alph*)]
+    \item identical CDR3 nucleotide sequences;
+    \item identical CDR3 amino acid sequences;
+    \item similar CDR3 amino acid sequences based on pairwise sequence alignment. 
+\end{enumerate}
 
 The latter approach is inspired by studies showing that similar TCR sequences also share epitope targets \cite{Glanville2017-ay, Dash2017-xt, Fischer_undated-cx}. Based on these approaches, Scirpy constructs a global, epitope-focused cell similarity network. While convergence of the nucleotide-based clonotype definition to the amino acid based one hints at selection pressure, sequence alignment based networks offer the opportunity to identify cells that might recognize the same epitopes.\par
 
