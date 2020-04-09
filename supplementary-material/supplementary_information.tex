@@ -7,6 +7,7 @@
 \usepackage{colortbl}
 \usepackage{graphicx}
 \usepackage{indentfirst}
+\usepackage{textgreek}
 \usepackage{amssymb}
 \usepackage{pifont}
 \newcommand{\xmark}{\ding{55}}
@@ -36,36 +37,36 @@
 
 \begin{figure}[!hb]
   \centering
-  \includesvg[width=7in]{multichains.svg}
-  \caption{\textbf{Scirpy flags cells with more than two pairs of α and β TCR-chains as “multichain” cells.} \textbf{(a)} Quality control of chain pair recovery showing the fraction of cells with unconventional receptor configuration. Orphan alpha and beta designates cells where only a single alpha or beta chain sequence coud be recovered, respectively. Extra in this context means that in addition to a valid pair of receptor chains, an additional alpha or beta sequence was found. \textbf{(b)} UMAP plot of ~96,000 cells from Wu et al. \cite{Wu2020-vp} with at least one detected CDR3 sequence with multichain-cells (n=474) highlighted in green. \textbf{(c)} Comparison of detected reads per cell in multichain-cells and other cells. Multichain cells comprised significantly more reads per cell ($p=9.45 \times 10^{-251}$, Wilcoxon-Mann-Whitney-test), supporting the hypothesis that (most of) multichain cells are technical artifacts arising from cell-multiplets \cite{Ilicic2016-ny}. }
+  \includegraphics[width=7in]{multichains.pdf}
+  \caption{\textbf{Scirpy flags cells with more than two pairs of \textalpha\ and \textbeta\ TCR-chains as “multichain” cells.} \textbf{(a)} Quality control of chain pair recovery showing the fraction of cells with unconventional receptor configuration. Orphan alpha and beta designates cells where only a single \textalpha- or \textbeta-chain sequence could be recovered, respectively. Extra in this context means that in addition to a valid pair of receptor chains, an additional alpha or beta sequence was found. \textbf{(b)} UMAP plot of ~96,000 cells from Wu et al. \cite{Wu2020-vp} with at least one detected CDR3 sequence with multichain-cells (n=474) highlighted in green. \textbf{(c)} Comparison of detected reads per cell in multichain-cells and other cells. Multichain cells comprised significantly more reads per cell ($p=9.45 \times 10^{-251}$, Wilcoxon-Mann-Whitney-test), supporting the hypothesis that (most of) multichain cells are technical artifacts arising from cell-multiplets \cite{Ilicic2016-ny}. }
 \end{figure}
 
 \newpage
 \begin{figure}[!ht]
   \centering
-  \includesvg[width=7in]{expansion_per_cluster.svg}
+  \includegraphics[width=7in]{expansion_per_cluster.pdf}
   \caption{\textbf{Differential tissue expansion patterns by T-cell clusters.} \textbf{(a)} UMAP plot of ~96,000 cells from \cite{Wu2020-vp} with at least one detected CDR3 region, colored according to the cell-type clusters described in the original study. (b, c) Distribution of tissue expansion patterns by clustered T-cell subpopulations visualized as \textbf{(b)} UMAP plot and \textbf{(c)} bar chart. While CD8+ effector, effector memory, and tissue-resident T-cells tended to be expanded in both tumor and normal adjacent tissue (NAT), CD4+ T-cell clusters primarily comprised singleton clonotypes.}
 \end{figure}
 
 \newpage
 \begin{figure}[!ht]
   \centering
-  \includesvg[width=7in]{clonal_expansion.svg}
+  \includegraphics[width=7in]{clonal_expansion.pdf}
   \caption{\textbf{T cell clonal expansion per patient.} \textbf{(a)} Fraction of cells belonging to clonotype singletons (blue), clonotypes with two cells (orange), or clonotypes with more than two cells (green). \textbf{(b)} Fraction of clonotypes comprising two, or more than two cells, respectively. Overall, between 8\% and 19\% of clonotypes were expanded, depending on the patient.}
 \end{figure}
 
 \newpage
 \begin{figure}[!ht]
   \centering
-  \includesvg[width=7in]{clonotype_convergence.svg}
+  \includegraphics[width=7in]{clonotype_convergence.pdf}
   \caption{\textbf{The comparison of clonotypes based on either sequence similarity or identity yields evidence of convergent evolution.} \textbf{(a)} Clonotypes with more than 50 cells visualized as a network plot. Each cluster represents a sub-network corresponding to a clonotype based on amino-acid sequence similarity; each dot represents an individual cell and is colored according to the clonotype assigned based on nucleotide-sequence identity. Four clonotypes with heterogeneous nucleotide sequences are highlighted. \textbf{(b)} Sequence logos of the primary TCR-α and TCR-β chains of the clonotypes highlighted in (a). \textbf{(c)} Patient composition of the four clonotypes highlighted in (a). Clonotypes number 10411, 5304, and 1626 comprised cells from a single patient only and were likely the result of convergent clonotype evolution. Clonotype 632 comprised cells from different patients and potentially represents an epitope targeting a common disease epitope (e.g. a viral epitope). \textbf{(d)} Cells from convergent clonotypes highlighted in the UMAP plot from \cite{Wu2020-vp}. We defined convergent clonotypes as subnetworks including different nucleotide sequences from the same patient.}
 \end{figure}
 
 \newpage
 \begin{figure}[!ht]
   \centering
-  \includesvg[width=7in]{gene_usage.svg}
-  \caption{\textbf{VDJ gene usage of 96,000 T cells from Wu et al. \cite{Wu2020-vp}} \textbf{(a)} VDJ gene usage of primary TCR-α and β chains visualized as a Sankey plot. Each bar refers to a specific VDJ segment, and each bar section to a specific V, D, or J gene. \textbf{(b)} Spectratype plot of the primary TCR-β chain, colored by J gene usage. The bars show the distribution of TCR-β CDR3 sequence length.}
+  \includegraphics[width=7in]{gene_usage.pdf}
+  \caption{\textbf{VDJ gene usage of 96,000 T cells from Wu et al. \cite{Wu2020-vp}} \textbf{(a)} VDJ gene usage of primary TCR-\textalpha\ and \textbeta\ chains visualized as a Sankey plot. Each bar refers to a specific VDJ segment, and each bar section to a specific V, D, or J gene. \textbf{(b)} Spectratype plot of the primary TCR-\textbeta\ chain, colored by J gene usage. The bars show the distribution of TCR-\textbeta\ CDR3 sequence length.}
 \end{figure}
 
 \newpage
