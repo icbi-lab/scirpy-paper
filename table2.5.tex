@@ -1,0 +1,223 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={7in, 10in}]{geometry}
+\usepackage{rotating}
+\usepackage{colortbl}
+\usepackage{graphicx}
+\usepackage{indentfirst}
+\usepackage{amssymb}
+\usepackage{pifont}
+\newcommand{\xmark}{\ding{55}}
+
+\usepackage{footnote}
+\makesavenoteenv{tabular}
+\makesavenoteenv{table}
+
+\usepackage[style=nature]{biblatex}
+\addbibresource{ref.bib}
+
+\usepackage[labelfont=bf]{caption}
+\captionsetup[table]{name=Supplementary Table, justification=raggedright, singlelinecheck=false}  
+
+\usepackage{titlesec}
+
+\renewcommand{\thesubsection}{\arabic{subsection}}
+\titleformat{\subsection}{\normalfont\Large\bfseries}{}{0em}{\thesubsection . }
+
+\begin{document}
+
+\begin{center}
+    \normalfont\Large\bfseries{Supplementary Information}
+\end{center}
+\hspace*{60pt}
+
+\subsection{Supplementary Note}
+
+A clonotype designates a collection of T or B cells that bear the same adaptive immune receptors, and thus can be regarded as descendants of a common, antecedent cell, that recognize the same epitopes. In single-cell sequencing data, T cells sharing identical complementarity-determining regions 3 (CDR3) sequences of both alpha and beta TCR chains make up a clonotype. \par
+
+Contrary to what would be expected based on the previously described mechanism of allelic exclusion \cite{Brady2010-gh}, single-cell sequencing datasets feature a considerable number of cells with more than one TCR alpha and beta pair. Since their existence violates current canon, most TCR analysis tools ignore cells with more than one productive CDR3 sequence \cite{Fischer_undated-cx, Zhang2018-ip} or select the CDR3 sequence with the highest expression level \cite{Afik2017-sg}. While in some cases these double-TCR cells might represent artifacts (e.g. doublets of a CD8+ and a CD4+ T cell engaged in an immunological synapse), there is an increasing amount of evidence in support of a bone fide dual-TCR population \cite{Schuldt2019-ey, Ji2010-bn}. \par
+
+Scirpy allows to investigate the composition and phenotypes of both, single- and dual-TCR T cells by leveraging on a T cell model similar to the one suggested by clonotype networks in TraCeR \cite{Stubbington2016-kh}, where T cells are allowed to have a primary and a secondary pair of alpha and beta chains. The primary pair consists of the alpha chain and beta chain with the highest read count. Likewise, the secondary pair is the pair of alpha-beta chains with the second highest expression level. If more than two variants of a chain are recovered for the same cell, those are ignored based on the assumption that each cell has only two copies of the underlying chromosome set. Scirpy  flags these cells as 'multichain' , allowing the user to possibly discard them from downstream analysis. The user can also choose if secondary TCRs shall be included in the analysis or not.\par
+
+Another decision when implementing a clonotype definition is whether it should be based on the nucleotide or amino acid sequence. Although nucleotide sequence reflects common origin, epitope reactivity is determined by the amino acid sequence. This has made the amino acid sequence of the CDR3 region a common choice for clonotype definition by existing tools and Scirpy conforms to this consensus. Given both the nucleotide and amino acid sequences of the CDR3 regions, it is also possible to analyse the probability of convergent evolution of TCR sequences toward a given amino acid sequence as a result of selection pressure by epitopes.
+\par
+
+Individual cells can be grouped together into clonotype networks based on:\newline
+\hspace*{2\parindent}(i) shared CDR3 amino acid sequences (despite differences at the DNA level);\newline
+\hspace*{2\parindent}(ii) shared primary or secondary chain pairs;\newline
+\hspace*{2\parindent}or (iii)  shared alpha or shared beta chains.\par
+
+The biological relevance of such networks would be the clustering of cells that recognize the same epitope. Inspired by recent papers stating the similar TCR sequences also share epitope targets \cite{Glanville2017-ay, Dash2017-xt, Fischer_undated-cx}, we aimed at implementing a more general approach, where different layers of TCR sequence similarity can be integrated into a global, epitope-focused cell similarity network. The possibility of linking similar clonotypes together also provides an opportunity to limit the impact of  sequencing bias resulting in the loss of an alpha or a beta chain for some cells.\par
+
+\newpage
+
+\begin{table}[ht]
+\begin{tabular}{p{2cm}p{4cm}p{1.2cm}p{0.6cm}p{0.6cm}p{0.6cm}p{0.6cm}p{0.6cm}p{0.6cm}p{0.6cm}p{0.6cm}p{0.6cm}p{0.6cm}}
+  \\\hline
+  \rotatebox[origin=l]{45}{Tool name} &
+  \rotatebox[origin=l]{45}{Website} &
+  \rotatebox[origin=l]{45}{Language} &
+  \rotatebox[origin=l]{45}{Receptor type} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Support\\[-1.6em]\\for 10x\end{tabular}} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Support\\[-1.6em]\\for smartSeq2\end{tabular}} &
+  \rotatebox[origin=l]{45}{Paired chains} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Post-processing\\[-1.6em]\\of clonotypes\end{tabular}} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Basic IR\\[-1.6em]\\ visualization\end{tabular}} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Advanced IR\\[-1.6em]\\visualization\end{tabular}} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Clonotype clusters\\[-1.6em]\\of single cells\end{tabular}} &
+  \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Integrated\\[-1.6em]\\with Gex\end{tabular}} &
+  \rotatebox[origin=l]{45}{Ref.} &
+  \\\hline
+Immcantation (pRESTO) &
+  \begin{tabular}[t]{@{}l@{}}https://immcantation.\\readthedocs.io\end{tabular} &
+  Python (and R) &
+  TCR BCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cite{Vander_Heiden2014-ou}  \\
+ImmuneArch (tcR) &
+  https://immunarch.com/ &
+  R &
+  TCR BCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cite{Nazarov2015-kk} \\
+iMonitor &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\zhangwei2015/IMonitor\end{tabular} &
+  Perl (and R) &
+  TCR BCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cite{Zhang2015-au} \\
+MIXCR &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\milaboratory/mixcr\end{tabular} &
+  Java &
+  TCR BCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cite{Bolotin2015-oa} \\
+VDJtools &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\mikessh/vdjtools\end{tabular} &
+  Java (Python) &
+  TCR BCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cite{Shugay2015-rb} \\
+TRUST4 &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\liulab-dfci/TRUST4\end{tabular} &
+  Perl &
+  TCR &
+  \cellcolor[rgb]{0.7,0.7,0.1}\sim\footnote[1]{Requires extra settings.} &
+  \cellcolor[rgb]{0.7,0.7,0.1}\sim\footnotemark[1] &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cite{Li2016-xh} \\
+\raggedright scTCR Seq &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\ElementoLab/scTCRseq\end{tabular} &
+  Python &
+  TCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cite{Redmond2016-hf} \\
+TraCeR &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\teichlab/tracer\end{tabular} &
+  Python &
+  TCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.7,0.1}\sim\footnote[2]{Requires special skills and extra coding.} &
+  \cite{Stubbington2016-kh} \\
+\raggedright VDJ Puzzle &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\simone-rizzetto/VDJPuzzle\end{tabular} &
+  Java &
+  TCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.7,0.1}\sim\footnotemark[2] &
+  \cite{Rizzetto2018-nj} \\
+TRAPes &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\YosefLab/TRAPeS\end{tabular} &
+  C++ &
+  TCR &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cellcolor[rgb]{0.7,0.1,0.1}\xmark &
+  \cite{Afik2017-sg} \\
+scirpy &
+  \begin{tabular}[t]{@{}l@{}}https://github.com/\\icbi-lab/scirpy\end{tabular} &
+  Python &
+  TCR &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+  \cellcolor[rgb]{0.1,0.7,0.1}\checkmark &
+   
+  \\\hline
+\end{tabular}
+
+\caption{\label{tab:Suppl1}Comparison of scirpy with currently available tools for immune repertoire analysis and visualization at the single cell level. Basic Immune Repertoire visualization includes clonotype abundance, diversity and VDJ usage. Advanced visualization adds repertoire overlap, clustering as well as specialized analysis of individual clonotypes and publication ready figures.}
+\end{table}
+
+\newpage
+\printbibliography[title={Supplementary References}]
+
+\end{document}
