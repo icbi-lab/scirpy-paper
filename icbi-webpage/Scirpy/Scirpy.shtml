@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+    <meta name="robots" content="index,follow" />
+    <meta
+      name="Keywords"
+      content="Bioinformatics, Computational Biology, Data Integration, Genomics, Regulatory Genomics, Transcriptomics, Software, Systems Biology, Computational Medicine, Deep sequencing, Cancer, Transcription, Mathematical modeling, Microscopy, Microarrays, methylation, m5c, RNA, RNA-BSseq, RNAseq"
+    />
+    <meta
+      name="Description"
+      content="The Section for Bioinformatrics at the Biocenter of Innsbruck Medical University is commited to the generation, management, integration, and leveraging data from genomics studies."
+    />
+    <link rel="stylesheet" href="/styles/sfb.css" type="text/css" />
+    <title>Section for Bioinformatics</title>
+
+    <script
+      type="text/javascript"
+      src="/js/jquery/1.8.17/js/jquery-1.7.1.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="/js/jquery/1.8.17/js/jquery-ui-1.8.17.custom.min.js"
+    ></script>
+    <link
+      type="text/css"
+      href="/js/jquery/1.8.9/css/custom-theme/jquery-ui-1.8.9.custom.css"
+      rel="stylesheet"
+    />
+
+    <script type="text/javascript">
+      $(function () {
+        $("#tabs").tabs({
+          ajaxOptions: {
+            cache: false,
+            error: function (xhr, status, index, anchor) {
+              $(anchor.hash).html(
+                "Couldn't load this tab. We'll try to fix this as soon as possible."
+              );
+            },
+          },
+        });
+      });
+
+      $(document).ready(function () {
+        if (document.location.hash != "" && document.location.hash.length > 1) {
+          //get the index from URL hash
+          tabSelect = document.location.hash.substr(
+            1,
+            document.location.hash.length
+          );
+          $("#tabs").tabs("select", tabSelect - 1);
+        }
+        $("#newslist").load("/news/newslist.html");
+      });
+
+      function gotoTab(myNumber) {
+        var $tabs = $("#tabs").tabs(); // first tab selected
+        $tabs.tabs("select", myNumber); // switch to tab
+        return false;
+      }
+    </script>
+  </head>
+  <body>
+    <div id="wrapper">
+      <div id="whitebg">
+        <img src="/images/white.png" width="1024" height="5290" />
+      </div>
+
+      <!--#include virtual='../style/header.txt' -->
+      <div id="newshead">NEWS</div>
+      <div id="newslist"></div>
+
+      <div id="content">
+        <div>
+          <h3>
+            Scirpy: predicting fusion neoantigens from RNA sequencing data
+          </h3>
+          <br />
+        </div>
+        <div id="tabs">
+          <ul>
+            <li><a href="/software/Scirpy/news.html">News</a></li>
+            <li>
+              <a href="/software/Scirpy/description.html">Description</a>
+            </li>
+            <li>
+              <a href="/software/Scirpy/documentation.html">Documentation</a>
+            </li>
+            <li><a href="/software/Scirpy/license.html">License</a></li>
+            <li><a href="/software/Scirpy/download.html">Download</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!--#include virtual='../style/menu.txt' -->
+    </div>
+  </body>
+</html>
