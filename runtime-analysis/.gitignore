@@ -1,0 +1,6 @@
+results
+.nextflow*
+work
+analyses/data
+analyses/tmp
+
