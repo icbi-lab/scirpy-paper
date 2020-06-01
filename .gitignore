@@ -1,2 +1,3 @@
 gh-pages
 *.ipynb_checkpoints
+__latexindent*
