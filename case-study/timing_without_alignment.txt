@@ -1,0 +1,7 @@
+[NbConvertApp] Converting notebook analysis-wu2020.ipynb to html
+[NbConvertApp] Executing notebook with kernel: python
+[NbConvertApp] Writing 6596167 bytes to ../gh-pages/wu2020.html
+
+real	11m53.148s
+user	11m29.406s
+sys	0m21.093s
