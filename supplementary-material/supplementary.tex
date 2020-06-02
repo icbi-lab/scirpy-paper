@@ -8,8 +8,10 @@
 \usepackage{graphicx}
 \usepackage{indentfirst}
 \usepackage{textgreek}
+\usepackage{siunitx}
 \usepackage{amssymb}
 \usepackage{pifont}
+\usepackage{textcomp}
 \usepackage{enumitem}
 \newcommand{\xmark}{\ding{55}}
 \setlength{\parskip}{1.5mm}
@@ -60,8 +62,27 @@
 \begin{figure}[!ht]
   \centering
   \includegraphics[width=7in]{../figures/runtime.pdf}
-  \caption{\textbf{Runtime analysis on simulated datasets.} We simulated 500,000 TCR-\textalpha\ and -\textbeta\ sequences using the \texttt{immuneSIM} package \cite{Weber2020}. \textbf{(a)} Performance of \texttt{tcr\_dist}. \textbf{(b)} Performance of \texttt{tcr\_neighbors}}
+  \caption{
+    \textbf{Runtime analysis on simulated datasets.}
+    \textbf{(a)} Elapsed time for calculating the clonotype network based on nucleic acid sequence identity 
+    (\texttt{scirpy.tl.tcr\_neighbors} function with \texttt{metric="identity"}) with increasing number of cells. 
+    The runtime is limited by the number of edges in the resulting cell \texttimes\ cell connectivity network.
+    We simulated \num{500000} \textalpha\ and \textbeta\ TCR sequences using the \texttt{immuneSIM} package \cite{Weber2020}, 
+    assuming a powerlaw-distribution of clonal frequencies \cite{Greiff2015, Weber2020}.
+    To obtain clonal frequencies representative for single-cell TCR sequencing data, we fitted a powerlaw distribution
+    to the empirical distribution of clonotype frequencies in the \textcite{Wu2020-vp} dataset using the \texttt{powerlaw}
+    Python package \cite{Alstott2014}. From this distribution, we randomly sampled datasets with 
+    \SIrange{5000}{300000}{} unique clonotypes, resulting in datasets with \SIrange{16553}{1085999}{} cells. 
+    The analysis was performed on a single core of an Intel E5-2699A v4, 2.4 GHz CPU. 
+    \textbf{(b)} Elapsed time for calculating the sequence  \texttimes\ sequence alignment-distance matrix on up to \num{300000} simulated \textalpha\ TCR sequences.
+    This distance-matrix is internally computed for \textalpha\ and \textbeta\ CDR3 amino-acid sequences independently when executing the 
+    \texttt{scirpy.tl.tcr\_neighbors} function with \texttt{metric="alignment"}. The runtime is quadratic over 
+    the number of unique sequences and computationally significantly more expensive than the sequence-identity
+    metric due to the computation of pairwise sequence alignments. The analysis was performed on 16 cores of an Intel E5-2699A v4, 2.4 GHz CPU. 
+    The source-code to reproduce the runtime analysis is available from Scirpy GitHub repository\protect\footnotemark
+    }
 \end{figure}
+\footnotetext{\url{https://github.com/icbi-lab/scirpy-paper/tree/master/runtime-analysis}}
 
 \newpage
 \begin{figure}[!ht]
