@@ -53,7 +53,7 @@
     least one detected CDR3 sequence with multichain-cells (n=474) highlighted in green.
     \textbf{(c)} Comparison of detected reads per cell in multichain-cells and other cells.
     Multichain cells comprised significantly more reads per cell (median=8517) than other cells (median=2301, $p=9.45 \times 10^{-251}$, Wilcoxon-Mann-Whitney-test), supporting the hypothesis 
-    that (most of) multichain cells are technical artifacts arising from 
+    that (most of) the multichain cells are technical artifacts arising from 
     cell-multiplets \cite{Ilicic2016-ny}. }
 \end{figure}
 
@@ -68,8 +68,8 @@
     (\texttt{scirpy.tl.tcr\_neighbors} function with \texttt{metric="identity"}) with increasing number of cells. 
     The runtime is limited by the number of edges in the resulting cell \texttimes\ cell connectivity network.
     We simulated \num{500000} \textalpha\ and \textbeta\ TCR sequences using the \texttt{immuneSIM} package \cite{Weber2020}, 
-    assuming a powerlaw-distribution of clonal frequencies \cite{Greiff2015, Weber2020}.
-    To obtain clonal frequencies representative for single-cell TCR sequencing data, we fitted a powerlaw distribution
+    assuming a power law-distribution of clonal frequencies \cite{Greiff2015, Weber2020}.
+    To obtain clonal frequencies representative for single-cell TCR sequencing data, we fitted a power law distribution
     to the empirical distribution of clonotype frequencies in the \textcite{Wu2020-vp} dataset using the \texttt{powerlaw}
     Python package \cite{Alstott2014}. From this distribution, we randomly sampled datasets with 
     \SIrange{5000}{300000}{} unique clonotypes, resulting in datasets with \SIrange{16553}{1085999}{} cells. 
@@ -79,7 +79,7 @@
     \texttt{scirpy.tl.tcr\_neighbors} function with \texttt{metric="alignment"}. The runtime is quadratic over 
     the number of unique sequences and computationally significantly more expensive than the sequence-identity
     metric due to the computation of pairwise sequence alignments. The analysis was performed on 16 cores of an Intel E5-2699A v4, 2.4 GHz CPU. 
-    The source-code to reproduce the runtime analysis is available from Scirpy GitHub repository\protect\footnotemark
+    The source-code to reproduce the runtime analysis is available from GitHub\protect\footnotemark
     }
 \end{figure}
 \footnotetext{\url{https://github.com/icbi-lab/scirpy-paper/tree/master/runtime-analysis}}
@@ -94,8 +94,8 @@
     detected CDR3 region, colored according to the cell-type clusters described in the 
     original study. \textbf{(b, c)} Distribution of tissue expansion patterns by clustered 
     T-cell subpopulations visualized as (b) UMAP plot and (c) bar
-    chart. While CD8+ effector, effector memory, and tissue-resident T-cells tended 
-    to be expanded in both tumor and normal adjacent tissue (NAT), CD4+ T-cell clusters
+    chart. While CD8$^+$ effector, effector memory, and tissue-resident T-cells tended 
+    to be expanded in both tumor and normal adjacent tissue (NAT), CD4$^+$ T-cell clusters
     primarily comprised singleton clonotypes.}
 \end{figure}
 
@@ -273,20 +273,21 @@ Scirpy &
   \\\hline
 \end{tabular}
 
-\caption{\label{tab:Suppl1}Comparison of Scirpy with currently available tools supporting immune repertoire analysis at the single-cell level, or offering immune repertoire visualization. Basic immune repertoire (IR) visualization includes clonotype abundance, diversity, and V(D)J usage. Advanced IR visualization also includes repertoire overlap, clustering as well as specialized analysis of individual clonotypes and publication ready figures. “Gex” indicates gene expression data. }
+\caption{\label{tab:Suppl1}Comparison of Scirpy with currently available tools supporting immune repertoire analysis at the single-cell level, or offering immune repertoire visualization. Basic immune repertoire (IR) visualization includes clonotype abundance, diversity, and V(D)J usage. Advanced IR visualization also includes repertoire overlap, clustering as well as specialized analysis of individual clonotypes and publication-ready figures. “Gex” indicates gene expression data. }
 \end{table}
 
 \newpage
 
 \subsection{Supplementary Note}
 
-A clonotype designates a collection of T or B cells that bear the same adaptive immune receptors, and thus recognize the same epitopes. Generally, these cells are also descendants of a common, antecedent cell and belong to the same cell clone. In single-cell RNA-sequencing (scRNA-seq) data, T cells sharing identical complementarity-determining regions 3 (CDR3) sequences of both TCR α and β chains make up a clonotype. \par
+A clonotype designates a collection of T or B cells that descend from a common, antecedent cell, and therefore, bear the same adaptive immune receptors and recognize the same epitopes.
+In single-cell RNA-sequencing (scRNA-seq) data, T cells sharing identical complementarity-determining regions 3 (CDR3) nucleotide sequences of both α and β TCR chains make up a clonotype. \par
 
-Contrary to what would be expected based on the previously described mechanism of allelic exclusion \cite{Brady2010-gh}, scRNA-seq datasets can feature a considerable number of cells with more than one TCR α and β pair. Since cells with more than one productive CDR3 sequence for each chain did not fit into our understanding of T cell biology, most TCR analysis tools ignore these cells \cite{Fischer_undated-cx, Zhang2018-ip} or select the CDR3 sequence with the highest expression level \cite{Afik2017-sg}. While in some cases these double-TCR cells might represent artifacts (e.g. doublets of a CD8+ and a CD4+ T cell engaged in an immunological synapse), there is an increasing amount of evidence in support of a \textit{bone fide} dual-TCR population \cite{Schuldt2019-ey, Ji2010-bn}. \par
+Contrary to what would be expected based on the previously described mechanism of allelic exclusion \cite{Brady2010-gh}, scRNA-seq datasets can feature a considerable number of cells with more than one TCR α and β pair. Since cells with more than one productive CDR3 sequence for each chain did not fit into our understanding of T cell biology, most TCR analysis tools ignore these cells \cite{Fischer_undated-cx, Zhang2018-ip} or select the CDR3 sequence with the highest expression level \cite{Afik2017-sg}. While in some cases these double-TCR cells might represent artifacts (e.g. doublets of a CD8$^+$ and a CD4$^+$ T cell engaged in an immunological synapse), there is an increasing amount of evidence in support of a \textit{bone fide} dual-TCR population \cite{Schuldt2019-ey, Ji2010-bn}. \par
 
-Scirpy allows investigating the composition and phenotypes of both single- and dual-TCR T cells by leveraging a T cell model similar to the one proposed in \cite{Stubbington2016-kh}, where T cells are allowed to have a primary and a secondary pair of α and β chains. For each cell, the primary pair consists of the α- and β-chain with the highest read count. Likewise, the secondary pair is the pair of α/β-chains with the second highest expression level. Based on the assumption that each cell has only two copies of the underlying chromosome set, if more than two variants of a chain are recovered for the same cell, the excess TCR chains are ignored by Scirpy and the corresponding cells flagged as “multichain” (Supplementary Figure 1). This filtering strategy leaves the choice of discarding or including multichain cells in downstream analyses.\par
+Scirpy allows investigating the composition and phenotypes of both single- and dual-TCR T cells by leveraging a T cell model similar to the one proposed in \cite{Stubbington2016-kh}, where T cells are allowed to have a primary and a secondary pair of α and β chains. For each cell, the primary pair consists of the α and β chains with the highest read count. Likewise, the secondary pair is the pair of α and β chains with the second highest expression level. Based on the assumption that each cell has only two copies of the underlying chromosome set, if more than two variants of a chain are recovered for the same cell, the excess TCR chains are ignored by Scirpy and the corresponding cells flagged as “multichain” (Supplementary Figure 1).  Moreover, it flags as “orphan chain“ the cells that have either a single α and β chain, possibly due to sequencing inefficiencies causing chain dropouts. This filtering strategy leaves the choice of discarding or including multichain and orphan-chain cells in downstream analyses.\par
 
-Scirpy implements a network-based clonotype definition that enables clustering cells into clonotypes based on the following options:
+Scirpy implements a network-based clonotype definition that enables clustering cells into clonotypes or clonotype clusters based on the following options:
 \begin{enumerate}[label=(\alph*)]
     \item identical CDR3 nucleotide sequences;
     \item identical CDR3 amino acid sequences;
