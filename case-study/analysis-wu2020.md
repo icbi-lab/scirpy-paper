@@ -119,7 +119,7 @@ We recommend following the [scanpy tutorial](https://scanpy-tutorials.readthedoc
 and the best practice paper by [Luecken et al.](https://www.embopress.org/doi/10.15252/msb.20188746).
 For the _Wu et al. (2020)_ dataset, the authors already provide clusters and UMAP coordinates.
 Instead of performing clustering and cluster annotation ourselves, we will just use
-provided data. The clustering and annotation procedure used by the authors is described in their [paper](https://www.nature.com/articles/s41586-020-2056-8#Sec2). 
+provided data. The clustering and annotation procedure used by the authors is described in their [paper](https://www.nature.com/articles/s41586-020-2056-8#Sec2).
 
 ```python
 sc.pp.filter_genes(adata, min_cells=10)
@@ -322,8 +322,8 @@ ir.tl.define_clonotypes(adata)
 ```
 
 ### identical amino acid sequences
-Alternatively, we can define "clonotype clusters" based on identical amino acid sequences. 
-Other than clonotypes, these do not necessarily arise from the same antecedent cell, but they recognize the same epitope. 
+Alternatively, we can define "clonotype clusters" based on identical amino acid sequences.
+Other than clonotypes, these do not necessarily arise from the same antecedent cell, but they recognize the same epitope.
 
 ```python
 %%time
@@ -339,8 +339,8 @@ ir.tl.define_clonotype_clusters(adata, metric="identity", sequence="aa")
 
 ### similar amino acid sequences
 
-With `scirpy`, it is possible to to one step further and summarize cells into the same clonotype cluster that might recognize the same epitope because they have *similar* amino acid sequences. 
-This can be done by leveraging *Levenshtein* or *alignment distances*. 
+With `scirpy`, it is possible to to one step further and summarize cells into the same clonotype cluster that might recognize the same epitope because they have *similar* amino acid sequences.
+This can be done by leveraging *Levenshtein* or *alignment distances*.
 Here, we compute the alignment distance with a cutoff of `15`, which is equivalent of three `A`s mutating into `R`.
 
 ```python
@@ -1128,7 +1128,7 @@ ir.pl.group_abundance(
 )
 ```
 
-### Tissue infiltration patterns. 
+### Tissue infiltration patterns.
 
 * The bar plots show the distribution of cells by tissue expansion patterns from
 blood-indpendned, non-expanded and expanded clones.
