@@ -3,8 +3,8 @@
 #$ -S /bin/bash
 #$ -V
 #$ -R y
-#$ -pe smp 44
-#$ -q all.q@apollo*
+#$ -pe smp 32
+#$ -q all.q@apollo-0*
 jupytext --to ipynb analysis-wu2020.md
 time jupyter nbconvert \
   --execute \
