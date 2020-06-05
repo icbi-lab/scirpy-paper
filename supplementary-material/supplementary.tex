@@ -14,6 +14,8 @@
 \usepackage{textcomp}
 \usepackage{float}
 \usepackage{enumitem}
+\usepackage{csquotes}
+\MakeOuterQuote{"}
 \newcommand{\xmark}{\ding{55}}
 \setlength{\parskip}{1.5mm}
 
@@ -44,10 +46,10 @@
   \centering
   \includegraphics[width=7in]{../figures/multichains.pdf}
   \caption{
-    \textbf{Scirpy flags cells with more than two pairs of \textalpha and \textbeta TCR-chains as “multichain” cells.} 
+    \textbf{Scirpy flags cells with more than two pairs of \textalpha\ and \textbeta\ TCR-chains as "multichain" cells.} 
     \textbf{(a)} The chart delineates the fraction of
-    cells with a certain receptor configuration. "Orphan" alpha and beta designates cells that lost their \textbeta or \textalpha chains, respectively. "Extra" refers to cells having an extra chain in addition to a valid pair of
-    \textalpha or \textbeta  chains. 
+    cells with a certain receptor configuration. "Orphan" alpha and beta designates cells that lost their \textbeta\ or \textalpha\ chains, respectively. "Extra" refers to cells having an extra chain in addition to a valid pair of
+    \textalpha\ or \textbeta\ chains. 
     \textbf{(b)} UMAP plot of ~96,000 cells from \textcite{Wu2020-vp} with at
     least one detected CDR3 sequence with multichain-cells (n=474) highlighted in green.
     \textbf{(c)} Comparison of detected reads per cell in multichain-cells and other cells.
@@ -64,7 +66,7 @@
   \caption{
     \textbf{Runtime analysis on simulated datasets.}
     \textbf{(a)} Elapsed time for calculating the clonotype network based on nucleic acid sequence identity 
-    (\texttt{scirpy.tl.tcr\_neighbors} function with \texttt{metric="identity"}) with increasing number of cells. 
+    (\texttt{scirpy.tl.tcr\_neighbors} function with \VerbatimQuotes\texttt{metric="identity"})\EnableQuotes with increasing number of cells. 
     The runtime is limited by the number of edges in the resulting cell \texttimes\ cell connectivity network.
     We simulated \num{500000} \textalpha\ and \textbeta\ TCR sequences using the \texttt{immuneSIM} package \cite{Weber2020}, 
     assuming a power law-distribution of clonal frequencies \cite{Greiff2015, Weber2020}.
@@ -72,14 +74,13 @@
     to the empirical distribution of clonotype frequencies in the \textcite{Wu2020-vp} dataset using the \texttt{powerlaw}
     Python package \cite{Alstott2014}. From this distribution, we randomly sampled datasets with 
     \SIrange{5000}{300000}{} unique clonotypes, resulting in datasets with \SIrange{16553}{1085999}{} cells. 
-    The analysis was performed on a single core of an Intel E5-2699A v4, 2.4 GHz CPU. 
+    The analysis was performed on a single core of an Intel E5-2699A v4, 2.4 GHz CPU. 
     \textbf{(b)} Elapsed time for calculating the sequence  \texttimes\ sequence alignment-distance matrix on up to \num{300000} simulated \textalpha\ TCR sequences.
     This distance-matrix is internally computed for \textalpha\ and \textbeta\ CDR3 amino-acid sequences independently when executing the 
-    \texttt{scirpy.tl.tcr\_neighbors} function with \texttt{metric="alignment"}. The runtime is quadratic over 
+    \texttt{scirpy.tl.tcr\_neighbors} function with  \VerbatimQuotes\texttt{metric="alignment"}.\EnableQuotes The runtime is quadratic over 
     the number of unique sequences and more computationally expensive than the sequence-identity
-    metric due to the computation of pairwise sequence alignments. The analysis was performed on 16 cores of an Intel E5-2699A v4, 2.4 GHz CPU. 
-    The source-code to reproduce the runtime analysis is available from: https://github.com/icbi-lab/scirpy-paper/tree/master/runtime-analysis.
-    }
+    metric due to the computation of pairwise sequence alignments. The analysis was performed on 16 cores of an Intel E5-2699A v4, 2.4 GHz CPU. 
+    The source-code to reproduce the runtime analysis is available from: https://github.com/icbi-lab/scirpy-paper/tree/master/runtime-analysis.}
 \end{figure}
 
 
@@ -139,8 +140,7 @@
   \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Advanced IR\\[-1.6em]\\visualization\end{tabular}} &
   \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Clonotype clusters\\[-1.6em]\\of single cells\end{tabular}} &
   \rotatebox[origin=l]{45}{\begin{tabular}[c]{@{}l@{}}Integrated\\[-1.6em]\\with Gex\end{tabular}} &
-  \rotatebox[origin=l]{45}{Ref.} &
-  \\\hline
+  \rotatebox[origin=l]{45}{Ref.} \\\hline
 Immcantation (pRESTO) &
   \begin{tabular}[t]{@{}l@{}}https://immcantation.\\readthedocs.io\end{tabular} &
   Python (and R) &
@@ -274,7 +274,7 @@ Scirpy &
   \\\hline
 \end{tabular}
 
-\caption{\label{tab:Suppl1}Comparison of Scirpy with currently available tools supporting immune repertoire analysis at the single-cell level, or offering immune repertoire visualization. Basic immune repertoire (IR) visualization includes clonotype abundance, diversity, and V(D)J usage. Advanced IR visualization also includes repertoire overlap, clustering as well as specialized analysis of individual clonotypes and generation of publication-ready figures. “Gex” indicates gene expression data. }
+\caption{\label{tab:Suppl1}Comparison of Scirpy with currently available tools supporting immune repertoire analysis at the single-cell level, or offering immune repertoire visualization. Basic immune repertoire (IR) visualization includes clonotype abundance, diversity, and V(D)J usage. Advanced IR visualization also includes repertoire overlap, clustering as well as specialized analysis of individual clonotypes and generation of publication-ready figures. "Gex" indicates gene expression data. }
 \end{table}
 
 \newpage
@@ -286,7 +286,7 @@ In single-cell RNA-sequencing (scRNA-seq) data, T cells sharing identical comple
 
 Contrary to what would be expected based on the previously described mechanism of allelic exclusion \cite{Brady2010-gh}, scRNA-seq datasets can feature a considerable number of cells with more than one TCR α and β pair. Since cells with more than one productive CDR3 sequence for each chain did not fit into common understanding of T cell biology, most TCR analysis tools ignore these cells \cite{Fischer_undated-cx, Zhang2018-ip} or select the CDR3 sequence with the highest expression level \cite{Afik2017-sg}. While in some cases these double-TCR cells might represent artifacts (e.g. cell doublets), there is an increasing amount of evidence in support of a \textit{bone fide} dual-TCR population \cite{Schuldt2019-ey, Ji2010-bn}. \par
 
-Scirpy allows investigating the composition and phenotypes of both single- and dual-TCR T cells by leveraging a T cell model similar to the one proposed in \cite{Stubbington2016-kh}, where T cells are allowed to have a primary and a secondary pair of α and β chains. For each cell, the primary pair consists of the α and β chains with the highest read counts. Likewise, the secondary pair is the pair of α and β chains with the second highest read counts. Based on the assumption that each cell has only two copies of the underlying chromosome set, if more than two variants of a chain are recovered for the same cell, the excess TCR chains are ignored by Scirpy and the corresponding cells flagged as “multichain” (Supplementary Figure 1).  Moreover, Scirpy flags as “orphan chain“ the cells that have lost their α or β chains, possibly due to sequencing inefficiencies resulting in chain dropouts. This filtering strategy leaves the choice of discarding or including multichain and orphan-chain cells in downstream analyses.\par
+Scirpy allows investigating the composition and phenotypes of both single- and dual-TCR T cells by leveraging a T cell model similar to the one proposed in \cite{Stubbington2016-kh}, where T cells are allowed to have a primary and a secondary pair of α and β chains. For each cell, the primary pair consists of the α and β chains with the highest read counts. Likewise, the secondary pair is the pair of α and β chains with the second highest read counts. Based on the assumption that each cell has only two copies of the underlying chromosome set, if more than two variants of a chain are recovered for the same cell, the excess TCR chains are ignored by Scirpy and the corresponding cells flagged as "multichain" (Supplementary Figure 1).  Moreover, Scirpy flags as “orphan chain“ the cells that have lost their α or β chains, possibly due to sequencing inefficiencies resulting in chain dropouts. This filtering strategy leaves the choice of discarding or including multichain and orphan-chain cells in downstream analyses.\par
 
 Scirpy implements a network-based clonotype analysis that enables clustering cells into clonotypes or clonotype clusters based on the following options:
 \begin{enumerate}[label=(\alph*)]
